@@ -1,5 +1,7 @@
 package com.inappstory.sdk.lrudiskcache;
 
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -32,9 +34,14 @@ public class CacheJournal {
     private File journalFile;
     private final IASCore core;
 
+    public static final String JOURNAL_NAME = "journal.bin";
+
+    private final HandlerThread journalThread;
+    private final Handler journalHandler;
+
     private final Object lock = new Object();
 
-    private final Map<String, CacheJournalItem> itemsLinks = new HashMap<>();
+    private static final long DEBOUNCE_DELAY_MS = 500;
 
     private final Map<String, List<CacheJournalItem>> cacheItems = new HashMap<>();
 
@@ -48,6 +55,11 @@ public class CacheJournal {
     public CacheJournal(IASCore core, FileManager fileManager) {
         this.fileManager = fileManager;
         this.core = core;
+
+        this.journalThread = new HandlerThread("IAS_CacheJournal_Thread");
+        this.journalThread.start();
+        this.journalHandler = new Handler(journalThread.getLooper());
+
         readJournal();
     }
 
@@ -136,6 +148,7 @@ public class CacheJournal {
         if (item != null) {
             long time = System.currentTimeMillis();
             item.setTime(time);
+            scheduleWriteJournal();
         }
     }
 
@@ -171,6 +184,25 @@ public class CacheJournal {
                 }
             }
         }
+    }
+
+    private final Runnable writeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            writeJournal();
+        }
+    };
+
+    public void forceWriteJournal() {
+        synchronized (lock) {
+            journalHandler.removeCallbacks(writeRunnable);
+            writeJournal();
+        }
+    }
+
+    public void scheduleWriteJournal() {
+        journalHandler.removeCallbacks(writeRunnable);
+        journalHandler.postDelayed(writeRunnable, DEBOUNCE_DELAY_MS);
     }
 
     public void writeJournal() {
@@ -224,6 +256,10 @@ public class CacheJournal {
                     String mimeType = stream.readUTF();
                     long time = stream.readLong();
                     long size = stream.readLong();
+                    File file = new File(filePath);
+                    if (!file.exists()) {
+                        continue;
+                    }
                     currentSize += size;
                     long downloadedSize = stream.readLong();
                     CacheJournalItem item = new CacheJournalItem(

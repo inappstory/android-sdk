@@ -1,11 +1,12 @@
 package com.inappstory.sdk.network.models;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public final class Response {
     public String body;
     public String errorBody;
-    public HashMap<String, String> headers;
+    public Map<String, String> headers;
     public int code;
     public String logId;
     public long contentLength;
@@ -23,7 +24,7 @@ public final class Response {
         public String body;
         public String errorBody;
         public String logId;
-        public HashMap<String, String> headers;
+        public Map<String, String> headers;
         public int code;
         public long contentLength;
 
@@ -58,7 +59,7 @@ public final class Response {
             return this;
         }
 
-        public Builder headers(HashMap<String, String> headers) {
+        public Builder headers(Map<String, String> headers) {
             this.headers = headers;
             return this;
         }

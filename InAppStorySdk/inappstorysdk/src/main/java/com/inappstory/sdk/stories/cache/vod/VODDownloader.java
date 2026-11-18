@@ -16,6 +16,7 @@ import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 
 public class VODDownloader {
 
@@ -93,7 +94,7 @@ public class VODDownloader {
         return null;
     }
 
-    public Pair<ContentRange, byte[]> downloadBytes(
+    public BytesForRange downloadBytes(
             String url,
             long from,
             long to,
@@ -101,7 +102,7 @@ public class VODDownloader {
     ) throws Exception {
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
-        urlConnection.setConnectTimeout(300000);
+        urlConnection.setConnectTimeout(5000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
         urlConnection.setRequestProperty("User-Agent", core.network().userAgent());
@@ -117,14 +118,12 @@ public class VODDownloader {
             }
         }
         ContentRange contentRange = new ContentRange(from, to, to);
-        //String curl = toCurlRequest(urlConnection, null);
         try {
             urlConnection.connect();
         } catch (Exception e) {
             return null;
         }
         int status = urlConnection.getResponseCode();
-        HashMap<String, String> headers = new HashMap<>();
 
         int sz = urlConnection.getContentLength();
         if (freeSpace > 0 && sz > freeSpace) {
@@ -133,7 +132,7 @@ public class VODDownloader {
         }
 
         String decompression = null;
-        HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(urlConnection);
+        Map<String, String> responseHeaders = new ConnectionHeadersMap().get(urlConnection);
         if (responseHeaders.containsKey("Content-Encoding")) {
             decompression = responseHeaders.get("Content-Encoding");
         }
@@ -159,6 +158,6 @@ public class VODDownloader {
         while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
             buffer.write(data, 0, nRead);
         }
-        return new Pair<>(contentRange, buffer.toByteArray());
+        return new BytesForRange(contentRange, buffer.toByteArray());
     }
 }

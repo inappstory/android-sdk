@@ -10,6 +10,7 @@ import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
+import com.inappstory.sdk.stories.cache.vod.BytesForRange;
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
@@ -81,6 +82,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                 );
             }
         }
+        BytesForRange bytesForRange;
         if (vodJournalItem == null) {
             vodJournalItem = generateVODCacheItem();
             vodCacheJournal.putItem(vodJournalItem);
@@ -88,7 +90,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
         try {
             downloadLog.sendRequestLog();
             downloadLog.generateResponseLog(false, filePath);
-            result =
+            bytesForRange =
                     vodDownloader.downloadBytes(
                             url,
                             rangeStart,
@@ -96,10 +98,10 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                             getCache().getCacheDir().getFreeSpace()
                     );
             downloadLog.sendResponseLog();
-            if (result != null) {
-                if (vodDownloader.putBytesToFile(rangeStart, result.second, filePath)) {
+            if (bytesForRange != null) {
+                if (vodDownloader.putBytesToFile(rangeStart, bytesForRange.content(), filePath)) {
                     vodJournalItem.addPart(rangeStart, rangeEnd);
-                    vodJournalItem.setFullSize(result.first.length());
+                    vodJournalItem.setFullSize(bytesForRange.range().length());
                     vodCacheJournal.putItem(vodJournalItem);
                     long size = vodJournalItem.getDownloadedSize();
 
@@ -108,9 +110,10 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                     cacheJournalItem.setDownloadedSize(size);
                     getCache().put(cacheJournalItem);
                     return new StoryVODResourceFileUseCaseResult(
-                            result.first,
+                            bytesForRange.range(),
                             new File(filePath),
-                            false);
+                            false
+                    );
                 }
             }
         } catch (Exception e) {

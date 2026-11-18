@@ -297,10 +297,6 @@ public class InAppStoryAPISubscribersManager {
                         }
                     }
 
-                    @Override
-                    public void setFeedId(String feedId) {
-
-                    }
 
                     @Override
                     public void onError() {

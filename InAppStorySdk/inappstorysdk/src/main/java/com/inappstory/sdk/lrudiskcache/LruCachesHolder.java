@@ -19,12 +19,14 @@ import java.util.concurrent.Executors;
 
 public class LruCachesHolder {
     private final LruDiskCache dummyCache = new DummyLruDiskCache();
-    private LruDiskCache fastCache = dummyCache;
-    private LruDiskCache commonCache = dummyCache;
-    private LruDiskCache infiniteCache = dummyCache;
-    private LruDiskCache bundleCache = dummyCache;
-    private LruDiskCache vodCache = dummyCache;
-
+    private volatile LruDiskCache fastCache = dummyCache;
+    private volatile LruDiskCache commonCache = dummyCache;
+    private volatile LruDiskCache infiniteCache = dummyCache;
+    private volatile LruDiskCache bundleCache = dummyCache;
+    private volatile LruDiskCache vodCache = dummyCache;
+    private final IASCore core;
+    private final Context context;
+    private final int cacheSize;
 
     private final ExecutorService initExecutor = Executors.newFixedThreadPool(1);
 
@@ -33,80 +35,114 @@ public class LruCachesHolder {
             final Context context,
             final int cacheSize
     ) {
+        this.core = core;
+        this.context = context.getApplicationContext();
+        this.cacheSize = cacheSize;
         initExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                File cacheDir = context.getFilesDir();
-                long commonCacheSize = MB_100;
-                long fastCacheSize = MB_10;
-                switch (cacheSize) {
-                    case CacheSize.SMALL:
-                        fastCacheSize = MB_5;
-                        commonCacheSize = MB_10;
-                        break;
-                    case CacheSize.LARGE:
-                        commonCacheSize = MB_200;
-                        break;
+                try {
+                    initializeCaches();
+                } catch (Exception ignored) {
+
                 }
-                String prefix = File.separator + "ias" + File.separator;
-                fastCache = new LruDiskCache(
-                        core,
-                        cacheDir,
-                        prefix + "fastCache",
-                        fastCacheSize,
-                        CacheType.FAST
-                );
-                commonCache = new LruDiskCache(
-                        core,
-                        cacheDir,
-                        prefix + "commonCache",
-                        commonCacheSize,
-                        CacheType.COMMON
-                );
-                infiniteCache = new LruDiskCache(
-                        core,
-                        cacheDir,
-                        prefix + "infiniteCache",
-                        cacheDir.getFreeSpace(),
-                        CacheType.INFINITE
-                );
-                bundleCache = new LruDiskCache(
-                        core,
-                        cacheDir,
-                        prefix + "bundleCache",
-                        cacheDir.getFreeSpace(),
-                        CacheType.BUNDLE
-                );
-                vodCache = new LruDiskCache(
-                        core,
-                        cacheDir,
-                        prefix + "vodCache",
-                        MB_500,
-                        CacheType.VOD
-                );
             }
         });
-
     }
 
+    private void initializeCaches() {
+        File cacheDir = context.getFilesDir();
+        long commonCacheSize = MB_100;
+        long fastCacheSize = MB_10;
+        switch (cacheSize) {
+            case CacheSize.SMALL:
+                fastCacheSize = MB_5;
+                commonCacheSize = MB_10;
+                break;
+            case CacheSize.LARGE:
+                commonCacheSize = MB_200;
+                break;
+        }
+        String prefix = File.separator + "ias" + File.separator;
+        fastCache = new LruDiskCache(
+                core,
+                cacheDir,
+                prefix + "fastCache",
+                fastCacheSize,
+                CacheType.FAST
+        );
+        commonCache = new LruDiskCache(
+                core,
+                cacheDir,
+                prefix + "commonCache",
+                commonCacheSize,
+                CacheType.COMMON
+        );
+        infiniteCache = new LruDiskCache(
+                core,
+                cacheDir,
+                prefix + "infiniteCache",
+                cacheDir.getFreeSpace(),
+                CacheType.INFINITE
+        );
+        bundleCache = new LruDiskCache(
+                core,
+                cacheDir,
+                prefix + "bundleCache",
+                cacheDir.getFreeSpace(),
+                CacheType.BUNDLE
+        );
+        vodCache = new LruDiskCache(
+                core,
+                cacheDir,
+                prefix + "vodCache",
+                MB_500,
+                CacheType.VOD
+        );
+    }
+
+    private volatile boolean isReinitializing = false;
+
+    private void scheduleReinit() {
+        if (isReinitializing) return;
+        isReinitializing = true;
+
+        initExecutor.submit(() -> {
+            try {
+                initializeCaches();
+            } finally {
+                isReinitializing = false;
+            }
+        });
+    }
+
+
+    public LruDiskCache getCacheOrReinit(LruDiskCache cacheToCheck) {
+        if (cacheToCheck == dummyCache || cacheToCheck == null) {
+            scheduleReinit();
+        }
+        return cacheToCheck != null ? cacheToCheck : dummyCache;
+    }
+
+
     public LruDiskCache getCommonCache() {
-        return commonCache;
+        return getCacheOrReinit(commonCache);
     }
 
     public LruDiskCache getFastCache() {
-        return fastCache;
+        return getCacheOrReinit(fastCache);
     }
 
     public LruDiskCache getVodCache() {
-        return vodCache;
+        return getCacheOrReinit(vodCache);
     }
 
     public LruDiskCache getBundleCache() {
-        return bundleCache;
+        return getCacheOrReinit(bundleCache);
     }
 
     public LruDiskCache getInfiniteCache() {
-        return infiniteCache;
+        return getCacheOrReinit(infiniteCache);
     }
 
     public void clear() throws IOException {
@@ -114,6 +150,5 @@ public class LruCachesHolder {
         commonCache.clearCache();
         infiniteCache.clearCache();
         vodCache.clearCache();
-        // bundleCache.clearCache();
     }
 }

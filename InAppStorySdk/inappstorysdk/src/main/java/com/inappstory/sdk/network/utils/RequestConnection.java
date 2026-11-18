@@ -29,7 +29,7 @@ public class RequestConnection {
         URL url = new GetUrl().fromRequest(request);
         Map<String, List<String>> connectionProperties = null;
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setConnectTimeout(30000);
+        connection.setConnectTimeout(5000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod(request.getMethod());
         if (request.getHeaders() != null) {

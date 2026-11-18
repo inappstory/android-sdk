@@ -3,6 +3,7 @@ package com.inappstory.sdk.network.utils;
 import org.brotli.dec.BrotliInputStream;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
@@ -26,7 +27,7 @@ public class ResponseStringFromStream {
         return response.toString();
     }
 
-    public InputStream getInputStream(InputStream inputStream, String decompression) throws Exception {
+    public InputStream getInputStream(InputStream inputStream, String decompression) throws IOException {
         if (decompression != null) {
             switch (decompression) {
                 case "br":

@@ -19,7 +19,7 @@ public class RawResponseFromConnection {
         InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, requestId + " " + connection.getURL().toString() + " \nStatus Code: " + responseCode);
         long contentLength = 0;
         String decompression = null;
-        HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(connection);
+        Map<String, String> responseHeaders = new ConnectionHeadersMap().get(connection);
         if (responseHeaders.containsKey("Content-Encoding")) {
             decompression = responseHeaders.get("Content-Encoding");
         }
@@ -28,6 +28,15 @@ public class RawResponseFromConnection {
         }
         ResponseStringFromStream stringFromStream = new ResponseStringFromStream();
         responseWithRawData.responseCode = responseCode;
+        StringBuilder headers = new StringBuilder();
+        for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
+            headers.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+        if (headers.length() > 0) {
+            headers = new StringBuilder(headers.substring(0, headers.length() - 1));
+            InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK,
+                    requestId + " Headers:\n" + headers);
+        }
         if (responseCode < 400) {
             responseWithRawData.decompressedStream = stringFromStream.get(connection.getInputStream(), decompression);
             InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK,

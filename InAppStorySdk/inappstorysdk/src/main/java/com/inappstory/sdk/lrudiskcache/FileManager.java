@@ -67,7 +67,7 @@ public class FileManager {
     private File cacheDir;
 
     public File getJournalFile() {
-        File file = new File(cacheDir, "journal.bin");
+        File file = new File(cacheDir, CacheJournal.JOURNAL_NAME);
         try {
             cacheDir.mkdirs();
             if (!file.exists()) file.createNewFile();
@@ -119,15 +119,20 @@ public class FileManager {
         return res;
     }
 
-    public static void deleteFolderRecursive(File fileOrDirectory, boolean deleteRoot) {
+    public static void deleteFolderRecursive(File fileOrDirectory,
+                                             boolean deleteRoot,
+                                             String excludePattern
+    ) {
 
         if (fileOrDirectory.isDirectory()) {
             for (File child : fileOrDirectory.listFiles()) {
-                deleteFolderRecursive(child, true);
+                deleteFolderRecursive(child, true, excludePattern);
             }
         }
         if (deleteRoot) {
             try {
+                if (excludePattern != null &&
+                        fileOrDirectory.getAbsolutePath().contains(excludePattern)) return;
                 fileOrDirectory.delete();
             } catch (Exception e) {
 

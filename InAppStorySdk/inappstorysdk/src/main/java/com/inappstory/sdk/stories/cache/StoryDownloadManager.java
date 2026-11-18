@@ -32,11 +32,8 @@ public class StoryDownloadManager {
     private final IASCore core;
 
     public void clearLocalData() {
-        //    core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
         core.contentHolder().readerContent().clearByType(ContentType.STORY);
         core.contentHolder().readerContent().clearByType(ContentType.UGC);
-        //   core.contentHolder().listsContent().clearByType(ContentType.STORY);
-        //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
     }
 
     public boolean changePriority(ContentIdWithIndex storyId,
@@ -350,7 +347,6 @@ public class StoryDownloadManager {
                                                 if (story == null) continue;
                                                 ids.add(story.id);
                                             }
-                                            callback.setFeedId(sFeedId);
                                             callback.storiesLoaded(ids);
                                         }
                                         if (favCallback != null) {
@@ -367,7 +363,6 @@ public class StoryDownloadManager {
                                                 if (story == null) continue;
                                                 ids.add(story.id);
                                             }
-                                            callback.setFeedId(sFeedId);
                                             callback.storiesLoaded(ids);
                                         }
                                     }
@@ -382,7 +377,6 @@ public class StoryDownloadManager {
                                             if (story == null) continue;
                                             ids.add(story.id);
                                         }
-                                        callback.setFeedId(sFeedId);
                                         callback.storiesLoaded(ids);
                                     }
                                 }
@@ -396,7 +390,6 @@ public class StoryDownloadManager {
                             if (story == null) continue;
                             ids.add(story.id);
                         }
-                        callback.setFeedId(sFeedId);
                         callback.storiesLoaded(ids);
                     }
                 }

@@ -542,13 +542,8 @@ public class UgcStoriesList extends RecyclerView {
             }
 
             @Override
-            public void setFeedId(String feedId) {
-
-            }
-
-            @Override
             public void onError() {
-                if (callback != null) callback.loadError("");
+                if (callback != null) callback.loadError("ugc_feed");
             }
         };
         manager.iasCore().contentLoader().storyDownloadManager().loadUgcStories(lcallback, payload);

@@ -223,7 +223,6 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
                                 downloadLog.responseLog,
                                 null,
                                 offset,
-                                -1,
                                 callback
                         );
             } catch (Exception e) {

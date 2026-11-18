@@ -72,12 +72,10 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
 
     public void uniqueId(String customUniqueId) {
         if (customUniqueId == null || customUniqueId.isEmpty()) {
-            //TODO Log error
             return;
         }
         if (Objects.equals(this.customUniqueId, customUniqueId)) return;
         if (checkViewModelForSubscribers(customUniqueId)) {
-            //TODO Log error
             return;
         }
         this.customUniqueId = customUniqueId;
@@ -386,12 +384,6 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
         if (bannerViewPager.getAdapter() != null) {
             BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
             pagerAdapter.unsubscribeFromFirst();
-            float iw = Sizes.getScreenSize(getContext()).x -
-                    Sizes.dpToPxExt(customBannerPlaceAppearance.prevBannerOffset(), getContext())
-                    - Sizes.dpToPxExt(customBannerPlaceAppearance.nextBannerOffset(), getContext());
-            for (int i = 0; i < customBannerPlaceAppearance.bannersOnScreen() - 1; i++) {
-                iw -= Sizes.dpToPxExt(customBannerPlaceAppearance.bannersGap(), getContext());
-            }
             BannerPagerAdapter adapter = new BannerPagerAdapter(
                     core,
                     new ArrayList<IBanner>(),
@@ -451,6 +443,14 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
             }
         }
     };
+    private boolean isBound = false;
+
+    private void bindToViewModelIfNeeded() {
+
+        if (isBound || uniqueId() == null || uniqueId().isEmpty()) {
+            return;
+        }
+    }
 
     @Override
     protected void onAttachedToWindow() {
@@ -478,7 +478,7 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
         super.onDetachedFromWindow();
 
         if (bannerCarouselViewModel != null)
-            bannerCarouselViewModel.singleTimeEvents().subscribeAndGetValue(steObserver);
+            bannerCarouselViewModel.singleTimeEvents().unsubscribe(steObserver);
         pauseAutoscroll();
     }
 

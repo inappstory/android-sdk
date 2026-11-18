@@ -6,6 +6,7 @@ import com.inappstory.sdk.network.models.ResponseWithRawData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ApiLogResponse {
     public long timestamp;
@@ -38,14 +39,14 @@ public class ApiLogResponse {
             generateError(response.code, response.errorBody, response.headers);
         }
     }
-    public void generateError(int statusCode, String errorBody, HashMap<String, String> headers) {
+    public void generateError(int statusCode, String errorBody, Map<String, String> headers) {
         this.isError = true;
         this.status = statusCode;
         this.errorBody = errorBody;
         generateHeaders(headers);
     }
 
-    public void generateFile(int statusCode, String filePath, HashMap<String, String> headers) {
+    public void generateFile(int statusCode, String filePath, Map<String, String> headers) {
         isStatic = true;
         this.status = statusCode;
         if (statusCode > 350) {
@@ -59,7 +60,7 @@ public class ApiLogResponse {
     }
 
     public void generateJsonResponse(int statusCode, String body,
-                                     HashMap<String, String> headers) {
+                                     Map<String, String> headers) {
         isJson = true;
         isError = false;
         this.status = statusCode;
@@ -67,7 +68,7 @@ public class ApiLogResponse {
         generateHeaders(headers);
     }
 
-    private void generateHeaders(HashMap<String, String> headers) {
+    private void generateHeaders(Map<String, String> headers) {
         if (headers != null) {
             for (String key : headers.keySet()) {
                 if (key != null)

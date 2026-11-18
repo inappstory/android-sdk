@@ -192,12 +192,12 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
                 )
                 .openConnection();
         connection.setRequestProperty("User-Agent", new UserAgent().generate(core));
-        connection.setConnectTimeout(30000);
+        connection.setConnectTimeout(5000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");
         int statusCode = connection.getResponseCode();
         InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, connection.getURL().toString() + " \nStatus Code: " + statusCode);
-        connection.disconnect();
+      //  connection.disconnect();
         return;
 
     }

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.network.utils;
 
 
+import android.util.Log;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 public class RequestSender {
     public Response send(Request req, String requestId) throws Exception {
+        long start = System.currentTimeMillis();
         ApiLogRequest requestLog = new ApiLogRequest();
         Pair<HttpURLConnection, Map<String, List<String>>> connectionWithProperties = new RequestConnection().build(req, requestId);
         HttpURLConnection connection = connectionWithProperties.first;
@@ -25,12 +27,11 @@ public class RequestSender {
         InAppStoryManager.sendApiRequestLog(requestLog);
         InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, requestLog.getCurl());
         ResponseWithRawData responseWithRawData = new RawResponseFromConnection().get(connection, requestId);
-
         ApiLogResponse responseLog = new ApiLogResponse();
         responseLog.buildFromRawResponse(responseWithRawData, requestId);
         InAppStoryManager.sendApiResponseLog(responseLog);
 
-        connection.disconnect();
+       // connection.disconnect();
         return responseWithRawData.response;
     }
 }

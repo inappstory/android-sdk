@@ -117,15 +117,6 @@ public class StoriesList extends RecyclerView {
     }
 
     private String feed = DEFAULT_FEED;
-    private String feedId = null;
-
-    public String getFeedId() {
-        return feedId;
-    }
-
-    void setListFeedId(String feedId) {
-        this.feedId = feedId;
-    }
 
     public String getUniqueID() {
         return uniqueID;
@@ -396,7 +387,7 @@ public class StoriesList extends RecyclerView {
                                                 isFavoriteList ?
                                                         IASStatisticStoriesV2Impl.FAVORITE :
                                                         IASStatisticStoriesV2Impl.LIST,
-                                                feedId
+                                                feed
                                         );
                                         core.statistic().storiesV1(
                                                 requestLocalParameters.sessionId(),
@@ -465,71 +456,78 @@ public class StoriesList extends RecyclerView {
 
     private void getVisibleItems() {
         int hasUgc = hasUgc();
-        if (layoutManager instanceof LinearLayoutManager) {
-            LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
-            for (int i = linearLayoutManager.findFirstVisibleItemPosition();
-                 i <= linearLayoutManager.findLastVisibleItemPosition(); i++) {
-                int ind = i - hasUgc;
-                if (adapter != null && adapter.getStoriesIds().size() > ind && ind >= 0) {
-                    View holder = linearLayoutManager.getChildAt(
-                            i - linearLayoutManager.findFirstVisibleItemPosition()
-                    );
-                    if (holder != null) {
-                        Rect rect = new Rect();
-                        holder.getGlobalVisibleRect(rect);
-                        Rect rect2 = new Rect();
-                        getGlobalVisibleRect(rect2);
-                        Rect rect3 = new Rect();
-                        getWindowVisibleDisplayFrame(rect3);
-                        int rectTop = Math.max(rect.top, rect2.top);
-                        int rectBottom = Math.min(rect.bottom, rect2.bottom);
-                        int rectHeight = Math.max(0, rectBottom - rectTop);
-                        int rectLeft = Math.max(rect.left, rect2.left);
-                        int rectRight = Math.min(rect.right, rect2.right);
-                        int rectWidth = Math.max(0, rectRight - rectLeft);
-                        if (rectTop > rect3.bottom || rectBottom < rect3.top) continue;
-                        float currentPercentage =
-                                (float) (rectHeight * rectWidth) /
-                                        (holder.getWidth() * holder.getHeight());
-                        ShownStoriesListItem cachedData = null;
-                        synchronized (scrolledItemsLock) {
-                            cachedData = scrolledItems.get(i);
-                        }
-                        if (cachedData != null) {
-                            currentPercentage = Math.max(currentPercentage, cachedData.areaPercent);
-                        }
-                        IListItemContent current = null;
-                        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                        if (inAppStoryManager != null)
-                            current = inAppStoryManager
-                                    .iasCore().contentHolder().listsContent()
-                                    .getByIdAndType(
-                                            adapter.getStoriesIds().get(ind),
-                                            ContentType.STORY
-                                    );
-                        if (current != null && currentPercentage > 0) {
-                            synchronized (scrolledItemsLock) {
-                                scrolledItems.put(
-                                        i,
-                                        new ShownStoriesListItem(
-                                                new StoryData(
-                                                        current,
-                                                        feed,
-                                                        isFavoriteList ?
-                                                                SourceType.FAVORITE :
-                                                                SourceType.LIST
-                                                ),
-                                                i,
-                                                currentPercentage
-                                        )
-                                );
-                            }
-                        }
-                    }
+        StoriesAdapter localAdapter = adapter;
+        if (!(layoutManager instanceof LinearLayoutManager) || localAdapter == null) return;
+        LinearLayoutManager lm = (LinearLayoutManager) layoutManager;
+        List<Integer> storiesIds = localAdapter.getStoriesIds();
+        int idsSize = storiesIds.size();
+        int firstPos = lm.findFirstVisibleItemPosition();
+        int lastPos = lm.findLastVisibleItemPosition();
+        Rect itemRect = new Rect();
+        Rect listRect = new Rect();
+        Rect windowRect = new Rect();
+        getGlobalVisibleRect(listRect);
+        getWindowVisibleDisplayFrame(windowRect);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                for (int i = firstPos; i <= lastPos; i++) {
+                    int ind = i - hasUgc;
+                    if (idsSize <= ind || ind < 0) continue;
+                    IListItemContent current = core.contentHolder().listsContent()
+                            .getByIdAndType(
+                                    storiesIds.get(ind),
+                                    ContentType.STORY
+                            );
+                    if (current == null) continue;
+                    View holder = lm.getChildAt(i - firstPos);
+                    if (holder == null) continue;
+                    holder.getGlobalVisibleRect(itemRect);
+                    int rectTop = Math.max(listRect.top, listRect.top);
+                    int rectBottom = Math.min(listRect.bottom, listRect.bottom);
+                    int rectHeight = Math.max(0, rectBottom - rectTop);
+                    int rectLeft = Math.max(listRect.left, listRect.left);
+                    int rectRight = Math.min(listRect.right, listRect.right);
+                    int rectWidth = Math.max(0, rectRight - rectLeft);
+                    if (rectTop > windowRect.bottom || rectBottom < windowRect.top) continue;
+                    float currentPercentage =
+                            (float) (rectHeight * rectWidth) /
+                                    (holder.getWidth() * holder.getHeight());
+
+                    updateScrolledItem(i, currentPercentage, current);
                 }
             }
+        });
+    }
+
+    private void updateScrolledItem(int index,
+                                    float currentPercentage,
+                                    @NonNull IListItemContent current
+    ) {
+        ShownStoriesListItem cachedData;
+        synchronized (scrolledItemsLock) {
+            cachedData = scrolledItems.get(index);
+            if (cachedData != null) {
+                currentPercentage = Math.max(currentPercentage, cachedData.areaPercent);
+            }
+            if (currentPercentage <= 0) return;
+            scrolledItems.put(
+                    index,
+                    new ShownStoriesListItem(
+                            new StoryData(
+                                    current,
+                                    feed,
+                                    isFavoriteList ?
+                                            SourceType.FAVORITE :
+                                            SourceType.LIST
+                            ),
+                            index,
+                            currentPercentage
+                    )
+            );
         }
     }
+
 
     StoriesAdapter adapter;
     boolean loadStoriesLaunched = false;
@@ -696,7 +694,7 @@ public class StoriesList extends RecyclerView {
     }
 
     private void renewCoordinates(final int index, @NonNull final StoryScreenHolder screenHolder) {
-        new Handler().postDelayed(new Runnable() {
+        postDelayed(new Runnable() {
             @Override
             public void run() {
                 int[] location = new int[2];
@@ -908,24 +906,12 @@ public class StoriesList extends RecyclerView {
                         isFavoriteList,
                         callback,
                         getFeed(),
-                        getFeedId(),
                         appearanceManager.csHasFavorite() && !isFavoriteList,
                         !isFavoriteList ? favoriteItemClick : null,
                         hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,
                         !isFavoriteList ? ugcItemClick : null);
                 if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
-                    setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
-                        @Override
-                        public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
-                            int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
-                            int overScroll = dy - scrollRange;
-                            if (overScroll != 0 && scrollCallback != null) {
-                                //  scrollCallback.onOverscroll(0, overScroll);
-                            }
-                            return scrollRange;
-                        }
-                    });
-
+                    setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()));
                 } else
                     setLayoutManager(layoutManager);
                 setAdapter(adapter);
@@ -1024,11 +1010,6 @@ public class StoriesList extends RecyclerView {
                         });
 
 
-                    }
-
-                    @Override
-                    public void setFeedId(String feedId) {
-                        setListFeedId(feedId);
                     }
 
                     @Override

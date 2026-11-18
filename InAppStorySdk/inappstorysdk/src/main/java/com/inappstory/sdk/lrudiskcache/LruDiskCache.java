@@ -7,12 +7,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class LruDiskCache {
 
     private CacheJournal journal;
     private FileManager manager;
     private long cacheSize;
+
+    private final Object lock = new Object();
 
     public CacheType cacheType;
 
@@ -23,6 +29,7 @@ public class LruDiskCache {
     public static final long MB_100 = 100 * MB_1;
     public static final long MB_200 = 200 * MB_1;
     public static final long MB_500 = 500 * MB_1;
+
 
     public File getCacheDir() {
         return manager.getCacheDir();
@@ -51,25 +58,25 @@ public class LruDiskCache {
     }
 
     public void put(CacheJournalItem item, String type) throws IOException {
-        synchronized (journal) {
+        synchronized (lock) {
             File file = new File(item.getFilePath());
             keyIsValid(item.getUniqueKey());
             String name = file.getAbsolutePath();
             manager.put(file, name);
             journal.delete(item.getUniqueKey(), type, false);
             journal.put(item, cacheSize);
-            journal.writeJournal();
+            journal.scheduleWriteJournal();
         }
     }
 
     public void delete(CacheJournalItem item, String type) throws IOException {
-        synchronized (journal) {
+        synchronized (lock) {
             File file = new File(item.getFilePath());
             keyIsValid(item.getUniqueKey());
             String name = file.getAbsolutePath();
             manager.delete(name);
             journal.delete(item.getUniqueKey(), type, false);
-            journal.writeJournal();
+            journal.scheduleWriteJournal();
         }
     }
 
@@ -78,33 +85,34 @@ public class LruDiskCache {
     }
 
     private void delete(String key, boolean writeJournal) throws IOException {
-        synchronized (journal) {
+        synchronized (lock) {
             keyIsValid(key);
             if (journal.delete(key, true) && writeJournal) {
-                journal.writeJournal();
+                journal.scheduleWriteJournal();
             }
         }
     }
 
     public void clearCache() throws IOException {
-        synchronized (journal) {
+        synchronized (lock) {
             Set<String> keys = new HashSet<>(journal.keySet());
             for (String key : keys) {
                 delete(key, false);
             }
-            journal.writeJournal();
+            journal.forceWriteJournal();
         }
-        FileManager.deleteFolderRecursive(getCacheDir(), false);
+        FileManager.deleteFolderRecursive(getCacheDir(), false, CacheJournal.JOURNAL_NAME);
+
     }
 
     public long getCacheSize() {
-        synchronized (journal) {
+        synchronized (lock) {
             return cacheSize;
         }
     }
 
     public void setCacheSize(long cacheSize) {
-        synchronized (journal) {
+        synchronized (lock) {
             this.cacheSize = cacheSize;
         }
     }
@@ -118,7 +126,7 @@ public class LruDiskCache {
     }
 
     public boolean hasKey(String key) {
-        synchronized (journal) {
+        synchronized (lock) {
             keyIsValid(key);
             CacheJournalItem item = journal.get(key);
             return item != null;
@@ -148,7 +156,7 @@ public class LruDiskCache {
     }
 
     public DownloadFileState get(String key, String type) {
-        synchronized (journal) {
+        synchronized (lock) {
             try {
                 keyIsValid(key);
                 CacheJournalItem item = journal.get(key, type);
@@ -158,7 +166,7 @@ public class LruDiskCache {
                         journal.delete(key, type, false);
                         file = null;
                     }
-                    journal.writeJournal();
+                    journal.scheduleWriteJournal();
                     if (file != null)
                         return new DownloadFileState(file, item.getSize(), item.getDownloadedSize());
                 }

@@ -82,7 +82,8 @@ public class FilesDownloadManager {
             } else {
                 isNewUrl = false;
             }
-            downloadFileCallbacks.get(key).add(callback);
+            if (callback != null)
+                downloadFileCallbacks.get(key).add(callback);
             return isNewUrl;
         }
     }

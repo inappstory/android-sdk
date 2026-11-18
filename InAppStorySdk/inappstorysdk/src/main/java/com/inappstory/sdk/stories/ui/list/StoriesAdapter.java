@@ -70,11 +70,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     private String listID;
     private String feed;
     private String sessionId;
-    private String feedID;
-
-    public void setFeedID(String feedID) {
-        this.feedID = feedID;
-    }
 
     void notifyChanges() {
         if (callback != null)
@@ -105,7 +100,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             boolean isFavoriteList,
             ListCallback callback,
             String feed,
-            String feedID,
             boolean useFavorite,
             OnFavoriteItemClick favoriteItemClick,
             boolean useUGC,
@@ -117,7 +111,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         this.feed = feed;
         this.sessionId = sessionId;
         this.storiesIds = storiesIds;
-        this.feedID = feedID;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.ugcItemClick = ugcItemClick;
@@ -281,7 +274,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             }
                         }
                 );
-                core.statistic().storiesV2().sendDeeplinkStory(current.id(), current.deeplink(), feedID);
+                core.statistic().storiesV2().sendDeeplinkStory(current.id(), current.deeplink(), feed);
                 core.callbacksAPI().useCallback(
                         IASCallbackType.CALL_TO_ACTION,
                         new UseIASCallback<CallToActionCallback>() {
