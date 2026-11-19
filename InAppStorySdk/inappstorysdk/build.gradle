@@ -77,7 +77,11 @@ android {
         jvmTarget = '1.8'
         freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
-
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+        }
+    }
    /* publishing {
         singleVariant("release") {
             withSourcesJar()
@@ -98,8 +102,10 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'org.brotli:dec:0.1.2'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:2.6.8'
     testImplementation 'org.json:json:20180813'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation 'androidx.test:runner:1.4.0'
@@ -108,7 +114,6 @@ dependencies {
     implementation "com.github.inappstory:android-sdk-utilsconnector:$utils_connector_version"
     // implementation "com.github.paperrose:iasutilsconnector:1.0.2"
 }
-
 /*tasks.withType(PublishToMavenRepository).configureEach { task ->
     // Если задача публикации относится НЕ к вашей публикации 'bar', мы её отключаем
     if (!task.name.contains("BarPublication") && !task.name.contains("MavenCentral")) {

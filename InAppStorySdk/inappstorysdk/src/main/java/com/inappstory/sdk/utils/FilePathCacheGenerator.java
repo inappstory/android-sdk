@@ -42,7 +42,7 @@ public class FilePathCacheGenerator {
                         "resources" +
                         File.separator +
                         StringsUtils.md5(url) +
-                        FilesDownloader.getFileExtensionFromUrl(url);
+                        StringsUtils.getExtensionFromUrl(url);
             case STORY_VOD_RESOURCE:
                 return contentLoader
                         .getVodCache()
@@ -55,7 +55,7 @@ public class FilePathCacheGenerator {
                         "resources" +
                         File.separator +
                         StringsUtils.md5(url) +
-                        FilesDownloader.getFileExtensionFromUrl(url);
+                        StringsUtils.getExtensionFromUrl(url);
             case SESSION_ASSET:
             case SESSION_ASSET_LOCAL:
                 return contentLoader
@@ -77,7 +77,7 @@ public class FilePathCacheGenerator {
                         "covers" +
                         File.separator +
                         StringsUtils.md5(url) +
-                        FilesDownloader.getFileExtensionFromUrl(url);
+                        StringsUtils.getExtensionFromUrl(url);
             case CUSTOM_FILE:
                 return contentLoader.getInfiniteCache().getCacheDir().getAbsolutePath() +
                         File.separator +
@@ -86,7 +86,7 @@ public class FilePathCacheGenerator {
                         "custom" +
                         File.separator +
                         StringsUtils.md5(url) +
-                        FilesDownloader.getFileExtensionFromUrl(url);
+                        StringsUtils.getExtensionFromUrl(url);
             case ARCHIVE:
             case GAME_FOLDER:
             case GAME_SPLASH:

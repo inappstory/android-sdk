@@ -102,8 +102,8 @@ public class VODDownloader {
     ) throws Exception {
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
-        urlConnection.setConnectTimeout(5000);
-        urlConnection.setReadTimeout(300000);
+        urlConnection.setConnectTimeout(10000);
+        urlConnection.setReadTimeout(60000);
         urlConnection.setRequestMethod("GET");
         urlConnection.setRequestProperty("User-Agent", core.network().userAgent());
         if (from > 0) {
@@ -144,7 +144,7 @@ public class VODDownloader {
             contentRange = StringsUtils.getRange(rangeHeader, sz);
         }
         ResponseStringFromStream responseStringFromStream = new ResponseStringFromStream();
-        if (status > 350) {
+        if (status >= 400) {
             return null;
         }
         byte[] data = new byte[1024];

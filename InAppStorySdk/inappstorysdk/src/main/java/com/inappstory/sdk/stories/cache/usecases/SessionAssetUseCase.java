@@ -60,8 +60,8 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                         return;
                     }
                     CacheJournalItem cacheJournalItem = generateCacheItem();
-                    cacheJournalItem.setSize(fileState.totalSize);
-                    cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                    cacheJournalItem.setSize(fileState.file.length());
+                    cacheJournalItem.setDownloadedSize(fileState.file.length());
                     try {
                         getCache().put(cacheJournalItem);
                     } catch (IOException e) {

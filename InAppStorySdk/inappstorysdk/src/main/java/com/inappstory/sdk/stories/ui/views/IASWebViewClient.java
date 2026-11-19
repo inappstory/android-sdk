@@ -68,7 +68,7 @@ public class IASWebViewClient extends WebViewClient {
             } else
                 return null;
         } else if (!url.startsWith("data:") && URLUtil.isValidUrl(url)) {
-            file = getCachedFile(FilesDownloader.deleteQueryArgumentsFromUrlOld(url, true));
+            file = getCachedFile(url);
         }
         return file;
     }

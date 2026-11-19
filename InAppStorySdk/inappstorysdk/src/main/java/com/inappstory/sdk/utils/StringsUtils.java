@@ -2,7 +2,6 @@ package com.inappstory.sdk.utils;
 
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
@@ -112,6 +111,40 @@ public class StringsUtils {
 
     public static String getEscapedString(String raw) {
         return new EscapeString().escape(raw);
+    }
+
+    public static String getExtensionFromUrl(String url) {
+        String croppedUrl = url.split("\\?")[0];
+        String[] parts = croppedUrl.split("/");
+        String name = parts[parts.length - 1];
+        if (name.contains("."))
+            return name.substring(name.lastIndexOf("."));
+        else
+            return "";
+    }
+
+    public static ContentRange parseContentRangeSafe(String rangeHeader, long fallbackLength) {
+        if (rangeHeader == null || !rangeHeader.contains("/")) {
+            return new ContentRange(-1, -1, fallbackLength);
+        }
+        try {
+            String[] parts = rangeHeader.split("/");
+            String rangePart = parts[0].replace("bytes ", "").trim();
+            String[] rangeBounds = rangePart.split("-");
+
+            long start = Long.parseLong(rangeBounds[0]);
+            long end = Long.parseLong(rangeBounds[1]);
+            long totalLength = fallbackLength;
+            if (parts.length > 1 && !parts[1].trim().equals("*")) {
+                totalLength = Long.parseLong(parts[1].trim());
+            } else if (end >= start) {
+                totalLength = end + 1;
+            }
+
+            return new ContentRange(start, end, totalLength);
+        } catch (Exception e) {
+            return new ContentRange(-1, -1, fallbackLength);
+        }
     }
 
     public static ContentRange getRange(String rangeHeader, long contentLength) {

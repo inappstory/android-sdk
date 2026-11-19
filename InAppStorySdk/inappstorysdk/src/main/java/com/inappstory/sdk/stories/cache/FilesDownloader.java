@@ -9,7 +9,11 @@ import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
+import com.inappstory.sdk.stories.cache.vod.BytesForRange;
+import com.inappstory.sdk.stories.cache.vod.ContentRange;
+import com.inappstory.sdk.utils.StringsUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,9 +21,11 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileLock;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 /**
@@ -27,6 +33,38 @@ import java.util.Map;
  */
 
 public class FilesDownloader {
+
+    private class FileDownloadKey {
+        public String url() {
+            return url;
+        }
+
+        public String filePath() {
+            return filePath;
+        }
+
+        private final String url;
+        private final String filePath;
+
+        private FileDownloadKey(String url, String filePath) {
+            this.url = url;
+            this.filePath = filePath;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof FileDownloadKey)) return false;
+            FileDownloadKey that = (FileDownloadKey) o;
+            return Objects.equals(url, that.url) &&
+                    Objects.equals(filePath, that.filePath);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(url, filePath);
+        }
+    }
 
     private class DownloadContextStatus {
         boolean isSuccess;
@@ -43,35 +81,54 @@ public class FilesDownloader {
     }
 
     private final IASCore core;
+    private final int connectTimeoutMs;
+    private final int readTimeoutMs;
+
+    private final Map<FileDownloadKey, List<FinishDownloadFileCallback>> downloadFileCallbacks = new HashMap<>();
+
+    private final Object finishLock = new Object();
 
     public FilesDownloader(IASCore core) {
+        this(core, 10000, 60000);
+    }
+
+    // Конструктор для тестов
+    public FilesDownloader(IASCore core, int connectTimeoutMs, int readTimeoutMs) {
         this.core = core;
+        this.connectTimeoutMs = connectTimeoutMs;
+        this.readTimeoutMs = readTimeoutMs;
     }
 
-    /**
-     * Получение ссылки без параметров
-     *
-     * @param url ссылка
-     */
-    public static String deleteQueryArgumentsFromUrlOld(String url, boolean delete) {
-        return url;//delete ? url.split("\\?")[0] : url;
+    boolean addFinishCallback(String url, String outputFile, FinishDownloadFileCallback callback) {
+        boolean isNewUrl = true;
+        FileDownloadKey key = new FileDownloadKey(url, outputFile);
+        synchronized (finishLock) {
+            if (!downloadFileCallbacks.containsKey(key)) {
+                downloadFileCallbacks.put(
+                        key,
+                        new ArrayList<>()
+                );
+            } else {
+                isNewUrl = false;
+            }
+            if (callback != null)
+                downloadFileCallbacks.get(key).add(callback);
+            return isNewUrl;
+        }
     }
 
-    public static String deleteQueryArgumentsFromUrl(String url, boolean delete) {
-        return delete ? url.split("\\?")[0] : url;
+    void invokeFinishCallbacks(String url, String outputFile, DownloadFileState state) {
+        List<FinishDownloadFileCallback> callbacks = new ArrayList<>();
+        FileDownloadKey key = new FileDownloadKey(url, outputFile);
+        synchronized (finishLock) {
+            if (downloadFileCallbacks.containsKey(key)) {
+                callbacks.addAll(downloadFileCallbacks.remove(key));
+            }
+        }
+        for (FinishDownloadFileCallback callback : callbacks) {
+            callback.finish(state);
+        }
     }
-
-
-    public static String getFileExtensionFromUrl(String url) {
-        String croppedUrl = deleteQueryArgumentsFromUrl(url, true);
-        String[] parts = croppedUrl.split("/");
-        String name = parts[parts.length - 1];
-        if (name.contains("."))
-            return name.substring(name.lastIndexOf("."));
-        else
-            return "";
-    }
-
 
     public DownloadFileState downloadFile(
             String url,
@@ -90,7 +147,6 @@ public class FilesDownloader {
                 finishCallback
         );
     }
-
 
     public DownloadFileState downloadFile(
             String url,
@@ -117,6 +173,7 @@ public class FilesDownloader {
         }
     }
 
+
     private boolean prepareFileSystem(File outputFile) {
         File parentDir = outputFile.getParentFile();
         if (parentDir != null && !parentDir.exists()) {
@@ -131,39 +188,43 @@ public class FilesDownloader {
         return true;
     }
 
-    private HttpURLConnection createConnection(String url, long downloadOffset) throws Exception {
+    HttpURLConnection createConnection(
+            String url,
+            long downloadOffset,
+            long downloadLimit,
+            boolean useEncoding
+    ) throws Exception {
         HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
-        urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
-        urlConnection.setConnectTimeout(10000);
-        urlConnection.setReadTimeout(60000);
+        if (useEncoding)
+            urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
+        urlConnection.setConnectTimeout(connectTimeoutMs);
+        urlConnection.setReadTimeout(readTimeoutMs);
         urlConnection.setRequestMethod("GET");
         urlConnection.setRequestProperty("User-Agent", core.network().userAgent());
         if (downloadOffset > 0) {
-            urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
+            if (downloadLimit > downloadOffset) {
+                urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-" + downloadLimit);
+            } else {
+                urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
+            }
+        } else {
+            if (downloadLimit > 0) {
+                urlConnection.setRequestProperty("Range", "bytes=" + 0 + "-" + downloadLimit);
+            }
         }
         urlConnection.connect();
         return urlConnection;
-    }
-
-    private void invokeFinishCallbacks(
-            FilesDownloadManager manager,
-            String url,
-            String path,
-            DownloadFileState state
-    ) {
-        if (manager != null)
-            manager.invokeFinishCallbacks(url, path, state);
     }
 
     private DownloadContext getDownloadContext(
             HttpURLConnection urlConnection,
             Map<String, String> headers,
             File outputFile,
+            long freeSpace,
             long downloadOffset
     ) throws Exception {
         int status = urlConnection.getResponseCode();
         long totalSize = urlConnection.getContentLength();
-        long freeSpace = outputFile.getFreeSpace();
         DownloadContext ctx = new DownloadContext();
         ctx.downloadStatus = new DownloadContextStatus();
         ctx.responseStatus = status;
@@ -182,7 +243,8 @@ public class FilesDownloader {
         if (isResuming && !serverSupportsRange) {
 
             ctx.offset = 0;
-            outputFile.delete();
+            if (outputFile != null)
+                outputFile.delete();
         }
 
         String decompression = null;
@@ -275,8 +337,9 @@ public class FilesDownloader {
                 }
             }
             fileOutputStream.getFD().sync();
+
             if (state == null) {
-                state = new DownloadFileState(outputFile, downloadContext.totalSize, downloadedBytes);
+                state = new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
             }
         } finally {
             if (lock != null && lock.isValid()) {
@@ -293,6 +356,80 @@ public class FilesDownloader {
         return state;
     }
 
+    public BytesForRange downloadBytes(
+            String url,
+            long from,
+            long to,
+            long freeSpace
+    ) throws Exception {
+        HttpURLConnection urlConnection = null;
+        //String curl = toCurlRequest(urlConnection, null);
+        try {
+            urlConnection = createConnection(url, from, to, false);
+        } catch (Exception e) {
+            logDownloadFileError(url, "Failed to connect");
+            return null;
+        }
+
+        try {
+            int status = urlConnection.getResponseCode();
+            if (status >= 400) {
+                logDownloadFileError(url, "Failed to connect; Status Code: " + status);
+                return null;
+            }
+            int contentLength = urlConnection.getContentLength();
+            if (freeSpace > 0 && contentLength > freeSpace) {
+                logDownloadFileError(url, "Insufficient disk space for byte range");
+                return null;
+            }
+            Map<String, String> headers = new ConnectionHeadersMap().get(urlConnection);
+            String decompression = null;
+            ContentRange contentRange = new ContentRange(from, to, contentLength > 0 ? from + contentLength : to);
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                String key = entry.getKey();
+                if (key.equalsIgnoreCase("Content-Encoding")) {
+                    decompression = entry.getValue();
+                } else if (key.equalsIgnoreCase("Content-Range")) {
+                    contentRange = StringsUtils.parseContentRangeSafe(entry.getValue(), contentLength);
+                }
+            }
+
+            return writeBytesToFile(urlConnection, contentRange, decompression, contentLength);
+        } catch (Exception e) {
+            logDownloadFileError(url, "Failed to download bytes: " + e.getMessage());
+            return null;
+        } finally {
+            urlConnection.disconnect();
+        }
+    }
+
+    private BytesForRange writeBytesToFile(
+            HttpURLConnection urlConnection,
+            ContentRange contentRange,
+            String decompression,
+            int contentLength
+    ) throws IOException {
+        ResponseStringFromStream responseStringFromStream = new ResponseStringFromStream();
+
+        InputStream inputStream = responseStringFromStream.getInputStream(
+                urlConnection.getInputStream(),
+                decompression
+        );
+        if (contentLength <= 0) {
+            contentLength = 8192;
+        }
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream(contentLength);
+
+        byte[] data = new byte[8192];
+
+        int nRead;
+
+        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        return new BytesForRange(contentRange, buffer.toByteArray());
+    }
+
     public DownloadFileState downloadFileWithEx(
             String url,
             File outputFile,
@@ -304,9 +441,8 @@ public class FilesDownloader {
     ) throws Exception {
         DownloadFileState state = null;
         if (outputFile == null) return null;
-        FilesDownloadManager manager = core.contentLoader().filesDownloadManager();
 
-        if (manager != null && !manager.addFinishCallback(
+        if (addFinishCallback(
                 url,
                 outputFile.getAbsolutePath(),
                 finishCallback)
@@ -324,10 +460,10 @@ public class FilesDownloader {
         HttpURLConnection urlConnection = null;
         //String curl = toCurlRequest(urlConnection, null);
         try {
-            urlConnection = createConnection(url, downloadOffset);
+            urlConnection = createConnection(url, downloadOffset, -1, true);
         } catch (Exception e) {
             logDownloadFileError(url, "Failed to connect");
-            invokeFinishCallbacks(manager, url, outputFile.getAbsolutePath(), null);
+            invokeFinishCallbacks(url, outputFile.getAbsolutePath(), null);
             return null;
         }
         Map<String, String> headers = new ConnectionHeadersMap().get(urlConnection);
@@ -335,11 +471,12 @@ public class FilesDownloader {
                 urlConnection,
                 headers,
                 outputFile,
+                outputFile.getFreeSpace(),
                 downloadOffset
         );
         if (!downloadContext.downloadStatus.isSuccess) {
             logDownloadFileError(url, downloadContext.downloadStatus.error);
-            invokeFinishCallbacks(manager, url, outputFile.getAbsolutePath(), null);
+            invokeFinishCallbacks(url, outputFile.getAbsolutePath(), null);
             return null;
         }
         apiLogResponse.contentLength = downloadContext.totalSize;
@@ -352,7 +489,7 @@ public class FilesDownloader {
             urlConnection.disconnect();
             apiLogResponse.generateFile(downloadContext.responseStatus, res, headers);
             logDownloadFileError(url, res);
-            invokeFinishCallbacks(manager, url, outputFile.getAbsolutePath(), null);
+            invokeFinishCallbacks(url, outputFile.getAbsolutePath(), null);
             return null;
         }
 
@@ -372,7 +509,7 @@ public class FilesDownloader {
             }
         } finally {
             urlConnection.disconnect();
-            invokeFinishCallbacks(manager, url, outputFile.getAbsolutePath(), state);
+            invokeFinishCallbacks(url, outputFile.getAbsolutePath(), state);
         }
         return state;
     }

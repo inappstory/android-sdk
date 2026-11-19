@@ -15,7 +15,6 @@ import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -67,7 +66,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 archiveName +
                 File.separator +
                 uniqueKey +
-                FilesDownloader.getFileExtensionFromUrl(url);
+                StringsUtils.getExtensionFromUrl(url);
     }
 
     private String getArchiveName(String url) {
@@ -195,7 +194,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 @Override
                 public void finish(DownloadFileState fileState) {
                     if (fileState != null && fileState.file != null) {
-                        if (fileState.downloadedSize == fileState.totalSize) {
+                        if (fileState.isFullDownload()) {
                             FileCheckerResult checkerResult = fileChecker.checkWithShaAndSize(
                                     fileState.file,
                                     archiveSize,
@@ -215,8 +214,9 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                             downloadLog.sendResponseLog();
                         }
                         CacheJournalItem cacheJournalItem = generateCacheItem();
+                        long maxSize = Math.max(fileState.totalSize, fileState.downloadedSize);
                         cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
-                        cacheJournalItem.setSize(fileState.totalSize);
+                        cacheJournalItem.setSize(maxSize);
                         try {
                             getCache().put(cacheJournalItem, type);
                         } catch (IOException ignored) {

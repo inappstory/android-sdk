@@ -39,7 +39,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
     public DownloadFileState getFile() {
         downloadLog.generateRequestLog(url);
         final DownloadFileState[] fileState = {getCache().get(uniqueKey)};
-        if (fileState[0] == null || fileState[0].downloadedSize != fileState[0].totalSize) {
+        if (fileState[0] == null || !fileState[0].isFullDownload()) {
             try {
                 downloadLog.sendRequestLog();
                 downloadLog.generateResponseLog(false, filePath);
@@ -47,12 +47,13 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                     @Override
                     public void finish(DownloadFileState state) {
                         downloadLog.sendResponseLog();
-                        if (state == null || state.downloadedSize != state.totalSize) {
+                        if (state == null || !state.isFullDownload()) {
                             return;
                         }
                         CacheJournalItem cacheJournalItem = generateCacheItem();
-                        cacheJournalItem.setSize(state.totalSize);
-                        cacheJournalItem.setDownloadedSize(state.totalSize);
+
+                        cacheJournalItem.setSize(state.file.length());
+                        cacheJournalItem.setDownloadedSize(state.file.length());
                         try {
                             getCache().put(cacheJournalItem);
                         } catch (IOException e) {

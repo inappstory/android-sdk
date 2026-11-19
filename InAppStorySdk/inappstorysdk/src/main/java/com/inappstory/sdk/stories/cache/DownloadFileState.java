@@ -7,8 +7,11 @@ import java.io.File;
 public class DownloadFileState {
     public DownloadFileState(File file, long totalSize, long downloadedSize) {
         this.file = file;
-        this.totalSize = totalSize;
         this.downloadedSize = downloadedSize;
+        if (downloadedSize > totalSize)
+            this.totalSize = -1;
+        else
+            this.totalSize = totalSize;
     }
 
     public DownloadFileState(boolean waiting) {
@@ -25,9 +28,13 @@ public class DownloadFileState {
     }
 
     public File getFullFile() {
-        if (downloadedSize == totalSize && file.exists())
+        if (isFullDownload())
             return file;
         return null;
+    }
+
+    public boolean isFullDownload() {
+        return downloadedSize == totalSize && file.exists();
     }
 
     @NonNull

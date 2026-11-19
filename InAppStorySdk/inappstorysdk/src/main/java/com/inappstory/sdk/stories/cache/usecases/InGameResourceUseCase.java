@@ -167,7 +167,7 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
                             @Override
                             public void finish(DownloadFileState fileState) {
                                 downloadLog.sendResponseLog();
-                                if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                                if (fileState == null || !fileState.isFullDownload()) {
                                     useCaseCallback.onError(new SimpleUseCaseError("Download interrupted"));
                                 } else {
                                     FileCheckerResult checkerResult = fileChecker.checkWithShaAndSize(
@@ -178,8 +178,9 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
                                     );
                                     if (checkerResult instanceof FileCheckerSuccess) {
                                         CacheJournalItem cacheJournalItem = generateCacheItem();
-                                        cacheJournalItem.setSize(fileState.totalSize);
-                                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                                        long maxSize = Math.max(fileState.totalSize, fileState.downloadedSize);
+                                        cacheJournalItem.setSize(maxSize);
+                                        cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
                                         try {
                                             getCache().put(cacheJournalItem);
                                         } catch (IOException e) {

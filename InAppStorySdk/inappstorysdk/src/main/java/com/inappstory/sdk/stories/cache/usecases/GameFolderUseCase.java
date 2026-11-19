@@ -117,7 +117,7 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
                 archiveName +
                 File.separator +
                 uniqueKey +
-                FilesDownloader.getFileExtensionFromUrl(url);
+                StringsUtils.getExtensionFromUrl(url);
         File zipFile = new File(zipFilePath);
         if (!zipFile.exists()) {
             useCaseCallback.onError(new SimpleUseCaseError("Can't find archive"));

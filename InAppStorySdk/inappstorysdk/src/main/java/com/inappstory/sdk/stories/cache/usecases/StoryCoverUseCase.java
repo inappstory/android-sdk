@@ -38,7 +38,7 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
     public Void getFile() {
         downloadLog.generateRequestLog(url);
         DownloadFileState fileState = getCache().get(uniqueKey);
-        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+        if (fileState == null || !fileState.isFullDownload()) {
             downloadLog.sendRequestLog();
             downloadLog.generateResponseLog(false, filePath);
             core.contentLoader().filesDownloadManager()
@@ -50,13 +50,13 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                                     @Override
                                     public void finish(DownloadFileState fileState) {
                                         downloadLog.sendResponseLog();
-                                        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                                        if (fileState == null || !fileState.isFullDownload()) {
                                             getStoryCoverCallback.error();
                                             return;
                                         }
                                         CacheJournalItem cacheJournalItem = generateCacheItem();
-                                        cacheJournalItem.setSize(fileState.totalSize);
-                                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                                        cacheJournalItem.setSize(fileState.file.length());
+                                        cacheJournalItem.setDownloadedSize(fileState.file.length());
                                         try {
                                             getCache().put(cacheJournalItem);
                                         } catch (IOException e) {

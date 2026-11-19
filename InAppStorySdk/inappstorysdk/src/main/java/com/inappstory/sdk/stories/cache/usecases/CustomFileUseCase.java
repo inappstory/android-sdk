@@ -40,7 +40,7 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
     public Void getFile() {
         downloadLog.generateRequestLog(url);
         DownloadFileState fileState = getCache().get(uniqueKey);
-        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+        if (fileState == null || !fileState.isFullDownload()) {
             downloadLog.sendRequestLog();
             downloadLog.generateResponseLog(false, filePath);
             core
@@ -54,13 +54,15 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                     @Override
                                     public void finish(DownloadFileState fileState) {
                                         downloadLog.sendResponseLog();
-                                        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                                        if (fileState == null ||  !fileState.isFullDownload()) {
                                             getFileCallback.onError(new SimpleUseCaseError(""));
                                             return;
                                         }
                                         CacheJournalItem cacheJournalItem = generateCacheItem();
-                                        cacheJournalItem.setSize(fileState.totalSize);
-                                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
+
+                                        long maxSize = Math.max(fileState.totalSize, fileState.downloadedSize);
+                                        cacheJournalItem.setSize(maxSize);
+                                        cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
                                         try {
                                             getCache().put(cacheJournalItem);
                                         } catch (IOException e) {

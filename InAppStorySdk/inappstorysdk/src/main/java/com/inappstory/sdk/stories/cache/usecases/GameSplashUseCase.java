@@ -36,7 +36,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                 "splashes" +
                 File.separator +
                 uniqueKey +
-                FilesDownloader.getFileExtensionFromUrl(splashScreen.url());
+                StringsUtils.getExtensionFromUrl(splashScreen.url());
     }
 
     @WorkerThread
@@ -44,7 +44,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
     public DownloadFileState getFile() {
         downloadLog.generateRequestLog(splashScreen.url());
         final DownloadFileState[] fileState = {getCache().get(uniqueKey)};
-        if (fileState[0] == null || fileState[0].downloadedSize != fileState[0].totalSize) {
+        if (fileState[0] == null || !fileState[0].isFullDownload()) {
             try {
                 downloadLog.sendRequestLog();
                 downloadLog.generateResponseLog(false, filePath);
@@ -53,7 +53,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                             @Override
                             public void finish(DownloadFileState state) {
                                 downloadLog.sendResponseLog();
-                                if (state == null || state.downloadedSize != state.totalSize) {
+                                if (state == null || !state.isFullDownload()) {
                                     fileState[0] = null;
                                     return;
                                 }
@@ -64,8 +64,10 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                                         true
                                 ) instanceof FileCheckerSuccess) {
                                     CacheJournalItem cacheJournalItem = generateCacheItem();
-                                    cacheJournalItem.setSize(state.totalSize);
-                                    cacheJournalItem.setDownloadedSize(state.totalSize);
+
+                                    long maxSize = Math.max(state.totalSize, state.downloadedSize);
+                                    cacheJournalItem.setSize(maxSize);
+                                    cacheJournalItem.setDownloadedSize(state.downloadedSize);
                                     try {
                                         getCache().put(cacheJournalItem);
                                     } catch (IOException e) {
