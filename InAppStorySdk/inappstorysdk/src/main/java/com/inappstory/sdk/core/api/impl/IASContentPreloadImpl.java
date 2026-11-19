@@ -43,17 +43,11 @@ public class IASContentPreloadImpl implements IASContentPreload {
         this.core = core;
         gamePreloader = new GamePreloader(
                 core,
-                core.contentLoader().filesDownloadManager(),
                 core.externalUtilsAPI().hasLottieAnimation(),
                 new SuccessUseCaseCallback<IGameCenterData>() {
                     @Override
                     public void onSuccess(final IGameCenterData result) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
-                            }
-                        });
+
                     }
                 }
         );

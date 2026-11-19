@@ -9,7 +9,6 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.vod.BytesForRange;
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
@@ -18,7 +17,6 @@ import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.cache.vod.VODDownloader;
 import com.inappstory.sdk.utils.FilePathCacheGenerator;
 import com.inappstory.sdk.utils.FilePathCacheType;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -53,8 +51,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
     public StoryVODResourceFileUseCaseResult getFile() {
         downloadLog.generateRequestLog(url);
         DownloadFileState fileState = getCache().get(uniqueKey);
-        VODCacheJournal vodCacheJournal = core.contentLoader().filesDownloadManager()
-                .getVodCacheJournal();
+        VODCacheJournal vodCacheJournal = core.cachesHolder().getVodCacheJournal();
         VODCacheJournalItem vodJournalItem = vodCacheJournal.getItem(uniqueKey);
         VODDownloader vodDownloader = new VODDownloader(core);
         Pair<ContentRange, byte[]> result = null;
@@ -155,7 +152,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getVodCache();
+        return core.cachesHolder().getVodCache();
     }
 
 }

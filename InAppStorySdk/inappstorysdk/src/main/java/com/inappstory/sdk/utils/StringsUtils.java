@@ -147,38 +147,6 @@ public class StringsUtils {
         }
     }
 
-    public static ContentRange getRange(String rangeHeader, long contentLength) {
-        String[] sections = rangeHeader.split("/");
-        String rangeSection = "";
-        rangeSection = sections[0];
-
-        String rangeReplaced = rangeSection.replaceAll("[^0-9]+", " ").trim();
-        String[] ranges = rangeReplaced.split(" ");
-        long start = -1;
-        long length = 0;
-        try {
-            start = Long.parseLong(ranges[0]);
-        } catch (Exception e) {
-
-        }
-        long end = -1;
-        try {
-            end = Long.parseLong(ranges[1]);
-        } catch (Exception e) {
-
-        }
-        if (sections.length == 2) {
-            length = Long.parseLong(sections[1]);
-        } else {
-            if (end != -1) {
-                length = end;
-            } else {
-                length = contentLength;
-            }
-        }
-        return new ContentRange(start, end, length);
-    }
-
     public static String escapeSingleQuotes(String raw) {
         return raw.replaceAll(Pattern.quote("'"), "'").replaceAll("'", "\\\\'");
     }

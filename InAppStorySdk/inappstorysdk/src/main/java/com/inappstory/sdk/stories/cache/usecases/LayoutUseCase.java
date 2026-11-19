@@ -48,7 +48,7 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
     private void deleteCacheKey() {
         try {
             getCache().delete(uniqueKey);
-        } catch (IOException e) {
+        } catch (Exception e) {
 
         }
     }
@@ -163,6 +163,6 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getInfiniteCache();
+        return core.cachesHolder().getInfiniteCache();
     }
 }

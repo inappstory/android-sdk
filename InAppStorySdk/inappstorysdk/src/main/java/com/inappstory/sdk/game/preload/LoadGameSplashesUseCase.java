@@ -6,12 +6,9 @@ import com.inappstory.sdk.game.cache.GetLocalSplashUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.utils.GameConstants;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.parse.from.FromGameSplashAnimation;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.File;
 import java.util.HashMap;

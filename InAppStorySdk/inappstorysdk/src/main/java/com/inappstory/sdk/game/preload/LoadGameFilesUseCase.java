@@ -1,7 +1,5 @@
 package com.inappstory.sdk.game.preload;
 
-import android.util.Log;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.DownloadResourcesUseCase;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
@@ -9,10 +7,8 @@ import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.GameArchiveItem;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.ArchiveUseCase;
 import com.inappstory.sdk.stories.cache.usecases.GameFolderUseCase;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.utils.EmptyProgressCallback;
 import com.inappstory.sdk.utils.ProgressCallback;
 

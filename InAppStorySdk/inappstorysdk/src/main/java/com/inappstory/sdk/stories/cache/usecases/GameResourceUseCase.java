@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 
 import android.system.Os;
-import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
@@ -20,7 +19,6 @@ import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,7 +137,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 CacheJournalItem cacheJournalItem = generateCacheItem();
                 cacheJournalItem.setDownloadedSize(cacheJournalItem.getSize());
                 getCache().put(cacheJournalItem);
-            } catch (IOException ignored) {
+            } catch (Exception ignored) {
 
             }
             downloadLog.generateResponseLog(true, filePath);
@@ -196,7 +194,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                         cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
                                         try {
                                             getCache().put(cacheJournalItem);
-                                        } catch (IOException e) {
+                                        } catch (Exception e) {
                                             useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
                                         }
                                         progressCallback.onProgress(resource.size, resource.size);
@@ -214,9 +212,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
 
                             }
                         };
-                core
-                        .contentLoader()
-                        .downloader()
+                core.filesDownloader()
                         .downloadFile(
                                 resource.url,
                                 new File(filePath),
@@ -269,6 +265,6 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getInfiniteCache();
+        return core.cachesHolder().getInfiniteCache();
     }
 }

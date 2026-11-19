@@ -59,7 +59,10 @@ import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.logcache.LogSaver;
 import com.inappstory.sdk.logcache.LogSaverImpl;
+import com.inappstory.sdk.lrudiskcache.CacheSize;
+import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -107,7 +110,9 @@ public class IASCoreImpl implements IASCore {
     private final AssetUrlsExtractor assetUrlsExtractor;
     private final IASLayoutHolder layoutHolder;
     private final LogSaver logSaver;
+    private final FilesDownloader filesDownloader;
     private IShowInputDialog showInputDialog;
+    private final LruCachesHolder cachesHolder;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -116,7 +121,11 @@ public class IASCoreImpl implements IASCore {
         widgetsViewModels = new WidgetsViewModels(this);
         exceptionManager = new ExceptionManager(this);
         contentHolder = new ContentHolder();
+
+        filesDownloader = new FilesDownloader(this);
+        cachesHolder = new LruCachesHolder(this, CacheSize.MEDIUM);
         contentLoader = new IASContentLoaderImpl(this);
+
         externalUtilsAPI = new IASExternalUtilsAPIImpl();
         sharedPreferencesAPI = new SharedPreferencesAPI(this);
         keyValueStorage = new KeyValueStorage(this);
@@ -150,6 +159,17 @@ public class IASCoreImpl implements IASCore {
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
     }
+
+    @Override
+    public LruCachesHolder cachesHolder() {
+        return cachesHolder;
+    }
+
+    @Override
+    public FilesDownloader filesDownloader() {
+        return filesDownloader;
+    }
+
 
     @Override
     public IShowInputDialog showInputDialog() {

@@ -1,21 +1,17 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
-import android.util.Log;
-
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.utils.FilePathCacheGenerator;
 import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileState> {
     private final String url;
@@ -56,7 +52,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                         cacheJournalItem.setDownloadedSize(state.file.length());
                         try {
                             getCache().put(cacheJournalItem);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                         }
                         fileState[0] = state;
                     }
@@ -66,9 +62,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
 
                     }
                 };
-                core
-                        .contentLoader()
-                        .downloader()
+                core.filesDownloader()
                         .downloadFile(
                                 url,
                                 new File(filePath),
@@ -105,7 +99,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getCommonCache();
+        return core.cachesHolder().getCommonCache();
     }
 
 }

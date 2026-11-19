@@ -10,11 +10,9 @@ import com.inappstory.sdk.lrudiskcache.FileCheckerSuccess;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IDownloadResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
     private final FileChecker fileChecker = new FileChecker();
@@ -70,7 +68,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                                     cacheJournalItem.setDownloadedSize(state.downloadedSize);
                                     try {
                                         getCache().put(cacheJournalItem);
-                                    } catch (IOException e) {
+                                    } catch (Exception e) {
 
                                     }
                                     fileState[0] = state;
@@ -82,9 +80,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
 
                             }
                         };
-                core
-                        .contentLoader()
-                        .downloader()
+                core.filesDownloader()
                         .downloadFile(
                                 splashScreen.url(),
                                 new File(filePath),
@@ -123,6 +119,6 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getInfiniteCache();
+        return core.cachesHolder().getInfiniteCache();
     }
 }

@@ -284,6 +284,14 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.storiesListVMHolder().clear();
+                core.cachesHolder().clear();
+                core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
+                core.contentHolder().readerContent().clearByType(ContentType.STORY);
+                core.widgetViewModels().bannerPlaceViewModels().clear();
+                core.keyValueStorage().clear();
+                core.assetsHolder().clear();
+                core.layoutHolder().clear();
                 core.contentLoader().clearCache();
             }
         });

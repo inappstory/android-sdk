@@ -3,24 +3,17 @@ package com.inappstory.sdk.core.api;
 import com.inappstory.sdk.core.banners.BannerDownloadManager;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.stories.cache.DownloadThreadsHolder;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 
 public interface IASContentLoader {
-    FilesDownloadManager filesDownloadManager();
-    LruDiskCache getFastCache();
-    LruDiskCache getCommonCache();
-    LruDiskCache getVodCache();
-    LruDiskCache getInfiniteCache();
-    LruDiskCache getBundleCache();
+    DownloadThreadsHolder downloadThreads();
     StoryDownloadManager storyDownloadManager();
     InAppMessageDownloadManager inAppMessageDownloadManager();
     BannerDownloadManager bannerDownloadManager();
     GameCacheManager gameCacheManager();
-
 
     boolean getIamWereLoadedStatus(String tagsHash);
     void changeIamWereLoadedStatus(String tagsHash);
@@ -31,5 +24,4 @@ public interface IASContentLoader {
     void setCacheSizes();
     void addVODResources(IReaderContent readerContent, int slideIndex);
     void runFreeSpaceCheck();
-    FilesDownloader downloader();
 }

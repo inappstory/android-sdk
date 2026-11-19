@@ -33,7 +33,9 @@ import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.logcache.LogSaver;
+import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -71,6 +73,7 @@ public interface IASCore {
     IASSessionAssetsHolder sessionAssets();
     IASExternalUtilsAPI externalUtilsAPI();
     IASContentLoader contentLoader();
+    FilesDownloader filesDownloader();
     IContentHolder contentHolder();
     NetworkClient network();
     IASGameLogs gameLogs();
@@ -84,4 +87,5 @@ public interface IASCore {
     IShowInputDialog showInputDialog();
     AssetUrlsExtractor assetUrlsExtractor();
     LogSaver logSaver();
+    LruCachesHolder cachesHolder();
 }

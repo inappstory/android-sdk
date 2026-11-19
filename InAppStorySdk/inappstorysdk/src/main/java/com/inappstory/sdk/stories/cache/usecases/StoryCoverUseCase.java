@@ -1,18 +1,14 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
-import android.util.Log;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.utils.FilePathCacheGenerator;
 import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
     IGetStoryCoverCallback getStoryCoverCallback;
@@ -41,8 +37,8 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
         if (fileState == null || !fileState.isFullDownload()) {
             downloadLog.sendRequestLog();
             downloadLog.generateResponseLog(false, filePath);
-            core.contentLoader().filesDownloadManager()
-                    .useFastDownloader(new Runnable() {
+            core.contentLoader().downloadThreads()
+                    .useFastCacheDownloader(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -59,7 +55,7 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                                         cacheJournalItem.setDownloadedSize(fileState.file.length());
                                         try {
                                             getCache().put(cacheJournalItem);
-                                        } catch (IOException e) {
+                                        } catch (Exception e) {
 
                                             getStoryCoverCallback.error();
                                         }
@@ -71,9 +67,7 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
 
                                     }
                                 };
-                                core
-                                        .contentLoader()
-                                        .downloader()
+                                core.filesDownloader()
                                         .downloadFile(
                                         url,
                                         new File(filePath),
@@ -114,6 +108,6 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getFastCache();
+        return core.cachesHolder().getFastCache();
     }
 }

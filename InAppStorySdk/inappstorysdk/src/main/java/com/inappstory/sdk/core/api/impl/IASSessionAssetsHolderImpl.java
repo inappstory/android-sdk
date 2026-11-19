@@ -3,7 +3,6 @@ package com.inappstory.sdk.core.api.impl;
 import com.inappstory.sdk.core.api.IASSessionAssetsHolder;
 import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +41,5 @@ public class IASSessionAssetsHolderImpl implements IASSessionAssetsHolder {
     @Override
     public void contentIsCleared() {
 
-    }
-
-    @Override
-    public boolean checkIfContentIsReady(FilesDownloadManager filesDownloadManager) {
-        return false;
     }
 }

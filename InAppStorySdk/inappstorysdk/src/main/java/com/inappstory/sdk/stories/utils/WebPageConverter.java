@@ -56,7 +56,7 @@ public class WebPageConverter {
             String resource = object.getUrl();
             String resourceKey = object.getKey();
             String key = StringsUtils.md5(resource);
-            File file = core.contentLoader().getCommonCache().getFullFile(key);
+            File file = core.cachesHolder().getCommonCache().getFullFile(key);
             if (file != null && file.exists() && file.length() > 0) {
                 resource = "file://" + file.getAbsolutePath();
             } else if (forced) {
@@ -113,7 +113,7 @@ public class WebPageConverter {
                     String path = "";
                     if (placeholderValue.first != null && placeholderValue.first.getType() == ImagePlaceholderType.URL) {
                         String uniqueKey = StringsUtils.md5(placeholderValue.first.getUrl());
-                        File file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
+                        File file = core.cachesHolder().getCommonCache().getFullFile(uniqueKey);
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
                         } else if (forced) {
@@ -127,7 +127,7 @@ public class WebPageConverter {
                     if (path.isEmpty()) {
                         if (placeholderValue.second != null && placeholderValue.second.getType() == ImagePlaceholderType.URL) {
                             String uniqueKey = StringsUtils.md5(placeholderValue.second.getUrl());
-                            File file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
+                            File file = core.cachesHolder().getCommonCache().getFullFile(uniqueKey);
                             if (file != null && file.exists() && file.length() > 0) {
                                 path = "file://" + file.getAbsolutePath();
                             } else if (forced) {

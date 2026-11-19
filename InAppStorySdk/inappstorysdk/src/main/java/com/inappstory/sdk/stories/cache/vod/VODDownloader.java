@@ -141,7 +141,7 @@ public class VODDownloader {
         }
         String rangeHeader = responseHeaders.get("Content-Range");
         if (rangeHeader != null) {
-            contentRange = StringsUtils.getRange(rangeHeader, sz);
+            contentRange = StringsUtils.parseContentRangeSafe(rangeHeader, sz);
         }
         ResponseStringFromStream responseStringFromStream = new ResponseStringFromStream();
         if (status >= 400) {

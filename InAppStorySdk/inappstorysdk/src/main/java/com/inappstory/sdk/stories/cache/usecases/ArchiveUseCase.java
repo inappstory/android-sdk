@@ -20,7 +20,6 @@ import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     private final String url;
@@ -84,7 +83,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
             removeOldVersions(true);
             try {
                 getCache().delete(generateCacheItem(), type);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
             downloadLog.generateRequestLog(url);
@@ -219,7 +218,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                         cacheJournalItem.setSize(maxSize);
                         try {
                             getCache().put(cacheJournalItem, type);
-                        } catch (IOException ignored) {
+                        } catch (Exception ignored) {
 
                         }
                     } else {
@@ -232,9 +231,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
 
                 }
             };
-            core
-                    .contentLoader()
-                    .downloader()
+            core.filesDownloader()
                     .downloadFile(
                             url,
                             new File(filePath),
@@ -282,6 +279,6 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getInfiniteCache();
+        return core.cachesHolder().getInfiniteCache();
     }
 }

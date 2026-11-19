@@ -31,6 +31,7 @@ import com.inappstory.sdk.externalapi.single.IASSingleStoryExternalAPIImpl;
 import com.inappstory.sdk.externalapi.stackfeed.IASStackFeedExternalAPIImpl;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListExternalAPIImpl;
 import com.inappstory.sdk.externalapi.subscribers.IAPISubscriber;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 
 public class InAppStoryAPI {
@@ -134,6 +135,14 @@ public class InAppStoryAPI {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.storiesListVMHolder().clear();
+                core.cachesHolder().clear();
+                core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
+                core.contentHolder().readerContent().clearByType(ContentType.STORY);
+                core.widgetViewModels().bannerPlaceViewModels().clear();
+                core.keyValueStorage().clear();
+                core.assetsHolder().clear();
+                core.layoutHolder().clear();
                 core.contentLoader().clearCache();
                 core.inAppStoryService().getApiSubscribersManager().clearCache();
             }

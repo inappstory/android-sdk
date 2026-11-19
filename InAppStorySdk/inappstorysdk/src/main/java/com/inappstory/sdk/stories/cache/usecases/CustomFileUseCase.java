@@ -1,20 +1,16 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
-import android.util.Log;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.utils.FilePathCacheGenerator;
 import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
     UseCaseCallback<File> getFileCallback;
@@ -45,7 +41,7 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
             downloadLog.generateResponseLog(false, filePath);
             core
                     .contentLoader()
-                    .filesDownloadManager()
+                    .downloadThreads()
                     .useCustomDownloader(new Runnable() {
                         @Override
                         public void run() {
@@ -65,7 +61,7 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                         cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
                                         try {
                                             getCache().put(cacheJournalItem);
-                                        } catch (IOException e) {
+                                        } catch (Exception e) {
 
                                             getFileCallback.onError(new SimpleUseCaseError(e.getMessage()));
                                         }
@@ -77,9 +73,7 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
 
                                     }
                                 };
-                                core
-                                        .contentLoader()
-                                        .downloader()
+                                core.filesDownloader()
                                         .downloadFile(
                                                 url,
                                                 new File(filePath),
@@ -120,6 +114,6 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getInfiniteCache();
+        return core.cachesHolder().getInfiniteCache();
     }
 }

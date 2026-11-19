@@ -14,7 +14,7 @@ public class DummyLruDiskCache extends LruDiskCache {
 
     DummyLruDiskCache(
     ) {
-        super(null, null, null, 0, null);
+        super(null, null, 0, null);
     }
 
 

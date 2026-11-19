@@ -15,7 +15,6 @@ import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 
 public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
@@ -41,7 +40,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     private void deleteCacheKey() {
         try {
             getCache().delete(uniqueKey);
-        } catch (IOException e) {
+        } catch (Exception e) {
 
         }
     }
@@ -64,7 +63,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                     cacheJournalItem.setDownloadedSize(fileState.file.length());
                     try {
                         getCache().put(cacheJournalItem);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
 
                     }
                     useCaseCallback.onSuccess(new Pair<>(cacheObject, fileState.file));
@@ -75,9 +74,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
 
                 }
             };
-            core
-                    .contentLoader()
-                    .downloader()
+            core.filesDownloader()
                     .downloadFile(
                             cacheObject.url,
                             new File(filePath),
@@ -145,6 +142,6 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getBundleCache();
+        return core.cachesHolder().getBundleCache();
     }
 }

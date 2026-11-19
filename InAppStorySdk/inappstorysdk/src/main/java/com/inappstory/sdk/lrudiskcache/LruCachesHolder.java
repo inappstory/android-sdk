@@ -11,6 +11,8 @@ import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.stories.cache.vod.EmptyVODCacheJournal;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,19 +26,18 @@ public class LruCachesHolder {
     private volatile LruDiskCache infiniteCache = dummyCache;
     private volatile LruDiskCache bundleCache = dummyCache;
     private volatile LruDiskCache vodCache = dummyCache;
-    private final IASCore core;
     private final Context context;
     private final int cacheSize;
 
     private final ExecutorService initExecutor = Executors.newFixedThreadPool(1);
 
+    private VODCacheJournal vodCacheJournal = new EmptyVODCacheJournal();
+
     public LruCachesHolder(
             final IASCore core,
-            final Context context,
             final int cacheSize
     ) {
-        this.core = core;
-        this.context = context.getApplicationContext();
+        this.context = core.appContext().getApplicationContext();
         this.cacheSize = cacheSize;
         initExecutor.submit(new Runnable() {
             @Override
@@ -46,8 +47,26 @@ public class LruCachesHolder {
                 } catch (Exception ignored) {
 
                 }
+                try {
+                    initializeVODJournal();
+                } catch (Exception ignored) {
+
+                }
             }
         });
+    }
+
+    private void initializeVODJournal() {
+        File file = new File(
+                context.getFilesDir() +
+                        File.separator +
+                        "ias" +
+                        File.separator +
+                        "vod",
+                "vod_journal.bin"
+        );
+        vodCacheJournal = new VODCacheJournal();
+        vodCacheJournal.initCacheJournal(file);
     }
 
     private void initializeCaches() {
@@ -65,35 +84,30 @@ public class LruCachesHolder {
         }
         String prefix = File.separator + "ias" + File.separator;
         fastCache = new LruDiskCache(
-                core,
                 cacheDir,
                 prefix + "fastCache",
                 fastCacheSize,
                 CacheType.FAST
         );
         commonCache = new LruDiskCache(
-                core,
                 cacheDir,
                 prefix + "commonCache",
                 commonCacheSize,
                 CacheType.COMMON
         );
         infiniteCache = new LruDiskCache(
-                core,
                 cacheDir,
                 prefix + "infiniteCache",
                 cacheDir.getFreeSpace(),
                 CacheType.INFINITE
         );
         bundleCache = new LruDiskCache(
-                core,
                 cacheDir,
                 prefix + "bundleCache",
                 cacheDir.getFreeSpace(),
                 CacheType.BUNDLE
         );
         vodCache = new LruDiskCache(
-                core,
                 cacheDir,
                 prefix + "vodCache",
                 MB_500,
@@ -145,10 +159,31 @@ public class LruCachesHolder {
         return getCacheOrReinit(infiniteCache);
     }
 
-    public void clear() throws IOException {
-        fastCache.clearCache();
-        commonCache.clearCache();
-        infiniteCache.clearCache();
-        vodCache.clearCache();
+    public VODCacheJournal getVodCacheJournal() {
+        return vodCacheJournal;
+    }
+
+    public void clear() {
+        try {
+            fastCache.clearCache();
+        } catch (Exception e) {
+
+        }
+        try {
+            commonCache.clearCache();
+        } catch (Exception e) {
+
+        }
+        try {
+            infiniteCache.clearCache();
+        } catch (Exception e) {
+
+        }
+        try {
+            vodCache.clearCache();
+        } catch (Exception e) {
+
+        }
+        vodCacheJournal.clear();
     }
 }

@@ -1,20 +1,13 @@
 package com.inappstory.sdk.game.cache;
 
-import android.util.Log;
-
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.content.models.SessionAsset;
-import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.GameResourceUseCase;
-import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 import com.inappstory.sdk.utils.ProgressCallback;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

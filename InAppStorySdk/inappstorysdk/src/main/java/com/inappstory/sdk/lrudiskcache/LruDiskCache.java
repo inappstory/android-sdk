@@ -1,16 +1,10 @@
 package com.inappstory.sdk.lrudiskcache;
 
-import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class LruDiskCache {
 
@@ -36,16 +30,14 @@ public class LruDiskCache {
     }
 
     LruDiskCache(
-            IASCore core,
             File cacheDir,
             String subPath,
             long cacheSize,
             CacheType cacheType
     ) {
         try {
-            if (core == null) return;
-            this.manager = new FileManager(core, cacheDir, subPath);
-            this.journal = new CacheJournal(core, manager);
+            this.manager = new FileManager(cacheDir, subPath);
+            this.journal = new CacheJournal(manager);
             this.cacheSize = cacheSize;
             this.cacheType = cacheType;
         } catch (Exception e) {
@@ -53,11 +45,11 @@ public class LruDiskCache {
     }
 
 
-    public void put(CacheJournalItem item) throws IOException {
+    public void put(CacheJournalItem item) throws Exception {
         put(item, null);
     }
 
-    public void put(CacheJournalItem item, String type) throws IOException {
+    public void put(CacheJournalItem item, String type) throws Exception {
         synchronized (lock) {
             File file = new File(item.getFilePath());
             keyIsValid(item.getUniqueKey());
@@ -69,7 +61,7 @@ public class LruDiskCache {
         }
     }
 
-    public void delete(CacheJournalItem item, String type) throws IOException {
+    public void delete(CacheJournalItem item, String type) throws Exception {
         synchronized (lock) {
             File file = new File(item.getFilePath());
             keyIsValid(item.getUniqueKey());
@@ -80,11 +72,11 @@ public class LruDiskCache {
         }
     }
 
-    public void delete(String key) throws IOException {
+    public void delete(String key) throws Exception {
         delete(key, true);
     }
 
-    private void delete(String key, boolean writeJournal) throws IOException {
+    private void delete(String key, boolean writeJournal) throws Exception {
         synchronized (lock) {
             keyIsValid(key);
             if (journal.delete(key, true) && writeJournal) {
@@ -93,7 +85,7 @@ public class LruDiskCache {
         }
     }
 
-    public void clearCache() throws IOException {
+    public void clearCache() throws Exception {
         synchronized (lock) {
             Set<String> keys = new HashSet<>(journal.keySet());
             for (String key : keys) {

@@ -19,22 +19,22 @@ public class FilePathCacheGenerator {
 
 
     public String generate() {
-        IASContentLoader contentLoader = core.contentLoader();
         switch (cacheType) {
             case LAYOUT:
-                return contentLoader
-                        .getInfiniteCache().getCacheDir()
-                        .getAbsolutePath() + File.separator +
+                return core.cachesHolder().getInfiniteCache()
+                        .getCacheDir()
+                        .getAbsolutePath() +
+                        File.separator +
                         "v2" +
                         File.separator +
                         "layout" +
                         File.separator +
                         StringsUtils.md5(url);
             case STORY_RESOURCE:
-                return contentLoader
-                        .getCommonCache()
+                return core.cachesHolder().getCommonCache()
                         .getCacheDir()
-                        .getAbsolutePath() + File.separator +
+                        .getAbsolutePath() +
+                        File.separator +
                         "v2" +
                         File.separator +
                         "stories" +
@@ -44,10 +44,10 @@ public class FilePathCacheGenerator {
                         StringsUtils.md5(url) +
                         StringsUtils.getExtensionFromUrl(url);
             case STORY_VOD_RESOURCE:
-                return contentLoader
-                        .getVodCache()
+                return core.cachesHolder().getVodCache()
                         .getCacheDir()
-                        .getAbsolutePath() + File.separator +
+                        .getAbsolutePath() +
+                        File.separator +
                         "v2" +
                         File.separator +
                         "stories" +
@@ -58,17 +58,19 @@ public class FilePathCacheGenerator {
                         StringsUtils.getExtensionFromUrl(url);
             case SESSION_ASSET:
             case SESSION_ASSET_LOCAL:
-                return contentLoader
-                        .getBundleCache()
+                return core.cachesHolder().getBundleCache()
                         .getCacheDir()
-                        .getAbsolutePath() + File.separator +
+                        .getAbsolutePath() +
+                        File.separator +
                         "v2" +
                         File.separator +
                         "bundle" +
                         File.separator +
                         url;
             case STORY_COVER:
-                return contentLoader.getFastCache().getCacheDir().getAbsolutePath() +
+                return core.cachesHolder().getFastCache()
+                        .getCacheDir()
+                        .getAbsolutePath() +
                         File.separator +
                         "v2" +
                         File.separator +
@@ -79,7 +81,9 @@ public class FilePathCacheGenerator {
                         StringsUtils.md5(url) +
                         StringsUtils.getExtensionFromUrl(url);
             case CUSTOM_FILE:
-                return contentLoader.getInfiniteCache().getCacheDir().getAbsolutePath() +
+                return core.cachesHolder().getInfiniteCache()
+                        .getCacheDir()
+                        .getAbsolutePath() +
                         File.separator +
                         "v2" +
                         File.separator +

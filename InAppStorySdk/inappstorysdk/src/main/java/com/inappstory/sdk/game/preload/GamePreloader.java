@@ -1,12 +1,9 @@
 package com.inappstory.sdk.game.preload;
 
-import android.util.Log;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,19 +17,16 @@ public class GamePreloader implements IGamePreloader {
 
     public GamePreloader(
             IASCore core,
-            FilesDownloadManager filesDownloadManager,
             boolean useAnimSplash,
             SuccessUseCaseCallback<IGameCenterData> successUseCaseCallback
     ) {
         this.core = core;
-        this.filesDownloadManager = filesDownloadManager;
         this.useAnimSplash = useAnimSplash;
         this.successUseCaseCallback = successUseCaseCallback;
     }
 
     LoadGameSplashesUseCase splashesUseCase;
     LoadGameFilesUseCase gameFilesUseCase;
-    private final FilesDownloadManager filesDownloadManager;
 
     Map<String, IGameCenterData> loadedData = null;
 

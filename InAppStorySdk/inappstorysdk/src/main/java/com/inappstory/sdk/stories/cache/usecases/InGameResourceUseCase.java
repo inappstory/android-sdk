@@ -13,13 +13,10 @@ import com.inappstory.sdk.lrudiskcache.FileCheckerSuccess;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
-import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,7 +123,7 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
                 CacheJournalItem cacheJournalItem = generateCacheItem();
                 cacheJournalItem.setDownloadedSize(cacheJournalItem.getSize());
                 getCache().put(cacheJournalItem);
-            } catch (IOException ignored) {
+            } catch (Exception ignored) {
 
             }
             downloadLog.generateResponseLog(true, filePath);
@@ -183,7 +180,7 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
                                         cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
                                         try {
                                             getCache().put(cacheJournalItem);
-                                        } catch (IOException e) {
+                                        } catch (Exception e) {
                                             useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
                                         }
                                         useCaseCallback.onSuccess(null);
@@ -200,9 +197,7 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
 
                             }
                         };
-                core
-                        .contentLoader()
-                        .downloader()
+                core.filesDownloader()
                         .downloadFile(
                                 resource.url,
                                 new File(filePath),
@@ -254,6 +249,6 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getInfiniteCache();
+        return core.cachesHolder().getInfiniteCache();
     }
 }

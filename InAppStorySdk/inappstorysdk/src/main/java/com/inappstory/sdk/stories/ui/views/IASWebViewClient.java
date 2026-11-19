@@ -11,9 +11,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
@@ -24,11 +22,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +38,7 @@ public class IASWebViewClient extends WebViewClient {
         if (manager == null) return null;
         IASCore core = manager.iasCore();
         try {
-            return core.contentLoader().getCommonCache().getFullFile(key);
+            return core.cachesHolder().getCommonCache().getFullFile(key);
         } catch (Exception e) {
             core.exceptionManager().createExceptionLog(e);
             return null;
@@ -139,13 +135,13 @@ public class IASWebViewClient extends WebViewClient {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) return null;
         IASCore core = manager.iasCore();
-        VODCacheJournalItem item = core.contentLoader().filesDownloadManager().getVodCacheJournal().getItem(uniqueKey);
+        VODCacheJournalItem item = core.cachesHolder().getVodCacheJournal().getItem(uniqueKey);
         if (item == null) return null;
 
         ContentRange range;
 
         if (rangeHeader != null) {
-            range = StringsUtils.getRange(rangeHeader, item.getFullSize());
+            range = StringsUtils.parseContentRangeSafe(rangeHeader, item.getFullSize());
         } else {
             range = new ContentRange(0, item.getFullSize(), item.getFullSize());
         }

@@ -103,8 +103,8 @@ public class SlidesDownloader {
 
     public int isSlideLoaded(SlideTaskKey key) throws IOException { //0 - not loaded, 1 - loaded, -1 - loaded with error
         boolean remove = false;
-        LruDiskCache cache = core.contentLoader().getCommonCache();
-        LruDiskCache vodCache = core.contentLoader().getVodCache();
+        LruDiskCache cache = core.cachesHolder().getCommonCache();
+        LruDiskCache vodCache = core.cachesHolder().getVodCache();
         SlideTask slideTask = slideTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {

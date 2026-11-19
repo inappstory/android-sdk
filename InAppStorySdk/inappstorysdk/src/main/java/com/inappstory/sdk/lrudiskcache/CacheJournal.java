@@ -4,9 +4,12 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.utils.CollectionUtils;
@@ -32,7 +35,6 @@ public class CacheJournal {
 
     public static final int VERSION = 1;
     private File journalFile;
-    private final IASCore core;
 
     public static final String JOURNAL_NAME = "journal.bin";
 
@@ -52,9 +54,8 @@ public class CacheJournal {
         putLink(item);
     }
 
-    public CacheJournal(IASCore core, FileManager fileManager) {
+    public CacheJournal(FileManager fileManager) {
         this.fileManager = fileManager;
-        this.core = core;
 
         this.journalThread = new HandlerThread("IAS_CacheJournal_Thread");
         this.journalThread.start();
@@ -157,7 +158,6 @@ public class CacheJournal {
         log.timestamp = System.currentTimeMillis();
         log.id = UUID.randomUUID().toString();
         log.message = "CacheOverflow";
-        log.session = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
         log.stacktrace = "Current size: "
                 + currentSize
                 + "\nNew file size: "
@@ -166,7 +166,13 @@ public class CacheJournal {
                 + limitSize;
         log.file = "DEBUG LOG";
         log.line = 0;
-        InAppStoryManager.sendExceptionLog(log);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                log.session = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
+                InAppStoryManager.sendExceptionLog(log);
+            }
+        });
     }
 
     private void removeOld(long newFileSize, long limitSize) throws IOException {

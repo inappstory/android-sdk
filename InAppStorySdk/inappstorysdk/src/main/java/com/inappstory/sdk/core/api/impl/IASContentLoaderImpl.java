@@ -16,14 +16,14 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.cache.DownloadThreadsHolder;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,9 +32,8 @@ import java.util.concurrent.TimeUnit;
 
 public class IASContentLoaderImpl implements IASContentLoader {
     private final IASCore core;
-    private final FilesDownloadManager filesDownloadManager;
+    private final DownloadThreadsHolder downloadThreadsHolder;
     private final GameCacheManager gameCacheManager;
-    private final FilesDownloader filesDownloader;
     private final InAppMessageDownloadManager inAppMessageDownloadManager;
     private final BannerDownloadManager bannerDownloadManager;
     private Set<String> iamByTagsWereLoaded = new HashSet<>();
@@ -43,8 +42,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
 
     public IASContentLoaderImpl(IASCore core) {
         this.core = core;
-        this.filesDownloader = new FilesDownloader(core);
-        this.filesDownloadManager = new FilesDownloadManager(core);
+        this.downloadThreadsHolder = new DownloadThreadsHolder();
         this.storyDownloadManager = new StoryDownloadManager(core);
         this.gameCacheManager = new GameCacheManager(core);
         this.inAppMessageDownloadManager = new InAppMessageDownloadManager(core);
@@ -53,33 +51,8 @@ public class IASContentLoaderImpl implements IASContentLoader {
     }
 
     @Override
-    public FilesDownloadManager filesDownloadManager() {
-        return filesDownloadManager;
-    }
-
-    @Override
-    public LruDiskCache getFastCache() {
-        return filesDownloadManager.getCachesHolder().getFastCache();
-    }
-
-    @Override
-    public LruDiskCache getCommonCache() {
-        return filesDownloadManager.getCachesHolder().getCommonCache();
-    }
-
-    @Override
-    public LruDiskCache getVodCache() {
-        return filesDownloadManager.getCachesHolder().getVodCache();
-    }
-
-    @Override
-    public LruDiskCache getInfiniteCache() {
-        return filesDownloadManager.getCachesHolder().getInfiniteCache();
-    }
-
-    @Override
-    public LruDiskCache getBundleCache() {
-        return filesDownloadManager.getCachesHolder().getBundleCache();
+    public DownloadThreadsHolder downloadThreads() {
+        return downloadThreadsHolder;
     }
 
     @Override
@@ -126,26 +99,17 @@ public class IASContentLoaderImpl implements IASContentLoader {
     @Override
     public void clearCache() {
         try {
-            core.storiesListVMHolder().clear();
-            filesDownloadManager.getCachesHolder().clear();
-            filesDownloadManager.getVodCacheJournal().clear();
-            core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
-            core.contentHolder().readerContent().clearByType(ContentType.STORY);
-            core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
-            core.contentLoader().inAppMessageDownloadManager().clearLocalData();
-            core.contentLoader().bannerDownloadManager().clearSlidesDownloader();
-            core.contentLoader().bannerDownloadManager().clearLocalData();
-            core.widgetViewModels().bannerPlaceViewModels().clear();
+            inAppMessageDownloadManager.clearSlidesDownloader();
+            inAppMessageDownloadManager.clearLocalData();
+            bannerDownloadManager.clearSlidesDownloader();
+            bannerDownloadManager.clearLocalData();
             storyDownloadManager.clearCache();
-            core.keyValueStorage().clear();
             synchronized (this) {
                 iamByTagsWereLoaded.clear();
             }
-        } catch (IOException ignored) {
+        } catch (Exception ignored) {
 
         }
-        core.assetsHolder().clear();
-        core.layoutHolder().clear();
     }
 
     @Override
@@ -169,17 +133,18 @@ public class IASContentLoaderImpl implements IASContentLoader {
                 }
             }
         }
-        getFastCache().setCacheSize(fastCacheType);
-        getCommonCache().setCacheSize(cacheType);
+        core.cachesHolder().getFastCache().setCacheSize(fastCacheType);
+        core.cachesHolder().getCommonCache().setCacheSize(cacheType);
     }
 
     @Override
     public void addVODResources(IReaderContent readerContent, int slideIndex) {
         List<IResource> resources = new ArrayList<>();
         resources.addAll(readerContent.vodResources(slideIndex));
+        VODCacheJournal journal = core.cachesHolder().getVodCacheJournal();
         for (IResource object : resources) {
-            if (filesDownloadManager.getVodCacheJournal().getItem(object.getFileName()) == null) {
-                filesDownloadManager.getVodCacheJournal().putItem(new VODCacheJournalItem(
+            if (journal.getItem(object.getFileName()) == null) {
+                journal.putItem(new VODCacheJournalItem(
                         "",
                         object.getFileName(),
                         "",
@@ -199,8 +164,8 @@ public class IASContentLoaderImpl implements IASContentLoader {
     Runnable checkFreeSpace = new Runnable() {
         @Override
         public void run() {
-            LruDiskCache commonCache = getCommonCache();
-            LruDiskCache fastCache = getFastCache();
+            LruDiskCache commonCache = core.cachesHolder().getCommonCache();
+            LruDiskCache fastCache = core.cachesHolder().getFastCache();
             if (commonCache != null && fastCache != null) {
                 long freeSpace = commonCache.getCacheDir().getFreeSpace();
                 if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
@@ -221,10 +186,5 @@ public class IASContentLoaderImpl implements IASContentLoader {
     @Override
     public void runFreeSpaceCheck() {
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public FilesDownloader downloader() {
-        return filesDownloader;
     }
 }
