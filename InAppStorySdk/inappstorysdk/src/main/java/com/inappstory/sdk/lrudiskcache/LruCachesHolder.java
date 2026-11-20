@@ -11,17 +11,22 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_500;
 import android.content.Context;
 import android.os.Handler;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.LoggerTags;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.vod.EmptyVODCacheJournal;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LruCachesHolder implements ILruCachesHolder {
     private final LruDiskCache dummyCache = new DummyLruDiskCache();
@@ -34,7 +39,7 @@ public class LruCachesHolder implements ILruCachesHolder {
     private final int cacheSize;
     private long commonCacheSize = MB_100;
     private long fastCacheSize = MB_10;
-
+    private final AtomicBoolean isReinitializing = new AtomicBoolean(false);
     private final ScheduledTPEManager checkSpaceThread = new ScheduledTPEManager();
 
     private final ExecutorService initExecutor = Executors.newFixedThreadPool(1);
@@ -123,27 +128,26 @@ public class LruCachesHolder implements ILruCachesHolder {
         );
     }
 
-    private volatile boolean isReinitializing = false;
-
     void scheduleReinit() {
-        if (isReinitializing) return;
-        isReinitializing = true;
+        if (!isReinitializing.compareAndSet(false, true)) {
+            return;
+        }
 
         initExecutor.submit(() -> {
             try {
                 initializeCaches();
             } finally {
-                isReinitializing = false;
+                isReinitializing.set(false);
             }
         });
     }
 
 
     LruDiskCache getCacheOrReinit(LruDiskCache cacheToCheck) {
-        if (cacheToCheck == dummyCache || cacheToCheck == null) {
+        if (cacheToCheck == dummyCache) {
             scheduleReinit();
         }
-        return cacheToCheck != null ? cacheToCheck : dummyCache;
+        return cacheToCheck;
     }
 
 
@@ -193,8 +197,16 @@ public class LruCachesHolder implements ILruCachesHolder {
                 commonCacheSize = MB_10;
                 fastCacheSize = MB_5;
                 if (freeSpace < commonCacheSize + fastCacheSize + MB_10) {
-                    commonCacheSize = MB_1;
-                    fastCacheSize = MB_1;
+                    getFastCache().setCacheSize(MB_1);
+                    getCommonCache().setCacheSize(MB_1);
+                    InAppStoryManager.showELog(
+                            LoggerTags.IAS_ERROR_TAG,
+                            StringsUtils.getErrorStringFromContext(
+                                    context,
+                                    R.string.ias_min_free_space_error
+                            )
+                    );
+                    return;
                 }
             }
         }
@@ -234,24 +246,10 @@ public class LruCachesHolder implements ILruCachesHolder {
     Runnable checkFreeSpace = new Runnable() {
         @Override
         public void run() {
-            if (isReinitializing) return;
+            if (isReinitializing.get()) return;
             LruDiskCache commonCache = getCommonCache();
-            LruDiskCache fastCache = getFastCache();
-            if (isReinitializing) return;
-            if (commonCache != null && fastCache != null) {
-                long freeSpace = commonCache.getCacheDir().getFreeSpace();
-                if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                    commonCache.setCacheSize(MB_50);
-                    if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                        commonCache.setCacheSize(MB_10);
-                        fastCache.setCacheSize(MB_5);
-                        if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                            commonCache.setCacheSize(MB_10);
-                            fastCache.setCacheSize(MB_5);
-                        }
-                    }
-                }
-            }
+            if (dummyCache != commonCache)
+                setCacheSizes(commonCache.getCacheDir().getFreeSpace());
         }
     };
 }
