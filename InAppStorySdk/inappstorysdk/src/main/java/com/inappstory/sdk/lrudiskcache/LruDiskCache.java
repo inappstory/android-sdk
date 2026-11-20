@@ -10,11 +10,11 @@ public class LruDiskCache {
 
     private CacheJournal journal;
     private FileManager manager;
-    private long cacheSize;
+    private long cacheSize = MB_1;
 
     private final Object lock = new Object();
 
-    public CacheType cacheType;
+    public CacheType cacheType = CacheType.INFINITE;
 
     public static final long MB_1 = 1024 * 1024;
     public static final long MB_5 = 5 * MB_1;

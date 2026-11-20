@@ -55,16 +55,8 @@ public class LruCachesHolder implements ILruCachesHolder {
         initExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                try {
-                    initializeCaches();
-                } catch (Exception ignored) {
-
-                }
-                try {
-                    initializeVODJournal();
-                } catch (Exception ignored) {
-
-                }
+                initializeCaches();
+                initializeVODJournal();
                 runFreeSpaceCheck();
             }
         });
