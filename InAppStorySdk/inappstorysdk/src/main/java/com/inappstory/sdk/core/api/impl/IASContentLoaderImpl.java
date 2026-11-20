@@ -1,8 +1,6 @@
 package com.inappstory.sdk.core.api.impl;
 
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_1;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 
@@ -15,9 +13,7 @@ import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.DownloadThreadsHolder;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
@@ -28,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class IASContentLoaderImpl implements IASContentLoader {
     private final IASCore core;
@@ -47,7 +42,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
         this.gameCacheManager = new GameCacheManager(core);
         this.inAppMessageDownloadManager = new InAppMessageDownloadManager(core);
         this.bannerDownloadManager = new BannerDownloadManager(core);
-        runFreeSpaceCheck();
+
     }
 
     @Override
@@ -97,7 +92,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
     }
 
     @Override
-    public void clearCache() {
+    public void clear() {
         try {
             inAppMessageDownloadManager.clearSlidesDownloader();
             inAppMessageDownloadManager.clearLocalData();
@@ -117,25 +112,6 @@ public class IASContentLoaderImpl implements IASContentLoader {
         gameCacheManager.clearGames();
     }
 
-    @Override
-    public void setCacheSizes() {
-        long cacheType = MB_100;
-        long fastCacheType = MB_10;
-        long freeSpace = core.appContext().getCacheDir().getFreeSpace();
-        if (freeSpace < cacheType + fastCacheType + MB_10) {
-            cacheType = MB_50;
-            if (freeSpace < cacheType + fastCacheType + MB_10) {
-                cacheType = MB_10;
-                fastCacheType = MB_5;
-                if (freeSpace < cacheType + fastCacheType + MB_10) {
-                    cacheType = MB_1;
-                    fastCacheType = MB_1;
-                }
-            }
-        }
-        core.cachesHolder().getFastCache().setCacheSize(fastCacheType);
-        core.cachesHolder().getCommonCache().setCacheSize(cacheType);
-    }
 
     @Override
     public void addVODResources(IReaderContent readerContent, int slideIndex) {
@@ -157,34 +133,5 @@ public class IASContentLoaderImpl implements IASContentLoader {
                 ));
             }
         }
-    }
-
-    private ScheduledTPEManager checkSpaceThread = new ScheduledTPEManager();
-
-    Runnable checkFreeSpace = new Runnable() {
-        @Override
-        public void run() {
-            LruDiskCache commonCache = core.cachesHolder().getCommonCache();
-            LruDiskCache fastCache = core.cachesHolder().getFastCache();
-            if (commonCache != null && fastCache != null) {
-                long freeSpace = commonCache.getCacheDir().getFreeSpace();
-                if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                    commonCache.setCacheSize(MB_50);
-                    if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                        commonCache.setCacheSize(MB_10);
-                        fastCache.setCacheSize(MB_5);
-                        if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                            commonCache.setCacheSize(MB_10);
-                            fastCache.setCacheSize(MB_5);
-                        }
-                    }
-                }
-            }
-        }
-    };
-
-    @Override
-    public void runFreeSpaceCheck() {
-        checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
     }
 }

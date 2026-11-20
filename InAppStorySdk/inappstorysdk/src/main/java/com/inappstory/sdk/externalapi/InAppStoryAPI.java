@@ -10,7 +10,6 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
-import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASStackFeed;
@@ -143,7 +142,7 @@ public class InAppStoryAPI {
                 core.keyValueStorage().clear();
                 core.assetsHolder().clear();
                 core.layoutHolder().clear();
-                core.contentLoader().clearCache();
+                core.contentLoader().clear();
                 core.inAppStoryService().getApiSubscribersManager().clearCache();
             }
         });

@@ -33,6 +33,7 @@ import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.logcache.LogSaver;
+import com.inappstory.sdk.lrudiskcache.ILruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
@@ -87,5 +88,5 @@ public interface IASCore {
     IShowInputDialog showInputDialog();
     AssetUrlsExtractor assetUrlsExtractor();
     LogSaver logSaver();
-    LruCachesHolder cachesHolder();
+    ILruCachesHolder cachesHolder();
 }

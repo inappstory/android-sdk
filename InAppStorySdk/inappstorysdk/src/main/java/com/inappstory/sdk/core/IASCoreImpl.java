@@ -60,6 +60,7 @@ import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.logcache.LogSaver;
 import com.inappstory.sdk.logcache.LogSaverImpl;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
+import com.inappstory.sdk.lrudiskcache.ILruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
@@ -112,7 +113,7 @@ public class IASCoreImpl implements IASCore {
     private final LogSaver logSaver;
     private final FilesDownloader filesDownloader;
     private IShowInputDialog showInputDialog;
-    private final LruCachesHolder cachesHolder;
+    private final ILruCachesHolder cachesHolder;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -161,7 +162,7 @@ public class IASCoreImpl implements IASCore {
     }
 
     @Override
-    public LruCachesHolder cachesHolder() {
+    public ILruCachesHolder cachesHolder() {
         return cachesHolder;
     }
 

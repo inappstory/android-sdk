@@ -46,7 +46,6 @@ import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -292,7 +291,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 core.keyValueStorage().clear();
                 core.assetsHolder().clear();
                 core.layoutHolder().clear();
-                core.contentLoader().clearCache();
+                core.contentLoader().clear();
             }
         });
     }
@@ -868,7 +867,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             isInitProcess = true;
         }
         try {
-            core.contentLoader().setCacheSizes();
+            core.cachesHolder().setCacheSizes(freeSpace);
             String domain = new HostFromSecretKey(
                     builder.apiKey
             ).get(builder.sandbox);

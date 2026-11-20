@@ -1,9 +1,11 @@
 package com.inappstory.sdk.lrudiskcache;
 
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_1;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_500;
 
 import android.content.Context;
@@ -13,13 +15,15 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.vod.EmptyVODCacheJournal;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-public class LruCachesHolder {
+public class LruCachesHolder implements ILruCachesHolder {
     private final LruDiskCache dummyCache = new DummyLruDiskCache();
     private volatile LruDiskCache fastCache = dummyCache;
     private volatile LruDiskCache commonCache = dummyCache;
@@ -28,6 +32,10 @@ public class LruCachesHolder {
     private volatile LruDiskCache vodCache = dummyCache;
     private final Context context;
     private final int cacheSize;
+    private long commonCacheSize = MB_100;
+    private long fastCacheSize = MB_10;
+
+    private final ScheduledTPEManager checkSpaceThread = new ScheduledTPEManager();
 
     private final ExecutorService initExecutor = Executors.newFixedThreadPool(1);
 
@@ -52,11 +60,13 @@ public class LruCachesHolder {
                 } catch (Exception ignored) {
 
                 }
+                runFreeSpaceCheck();
             }
         });
+
     }
 
-    private void initializeVODJournal() {
+    void initializeVODJournal() {
         File file = new File(
                 context.getFilesDir() +
                         File.separator +
@@ -69,10 +79,8 @@ public class LruCachesHolder {
         vodCacheJournal.initCacheJournal(file);
     }
 
-    private void initializeCaches() {
+    void initializeCaches() {
         File cacheDir = context.getFilesDir();
-        long commonCacheSize = MB_100;
-        long fastCacheSize = MB_10;
         switch (cacheSize) {
             case CacheSize.SMALL:
                 fastCacheSize = MB_5;
@@ -117,7 +125,7 @@ public class LruCachesHolder {
 
     private volatile boolean isReinitializing = false;
 
-    private void scheduleReinit() {
+    void scheduleReinit() {
         if (isReinitializing) return;
         isReinitializing = true;
 
@@ -131,7 +139,7 @@ public class LruCachesHolder {
     }
 
 
-    public LruDiskCache getCacheOrReinit(LruDiskCache cacheToCheck) {
+    LruDiskCache getCacheOrReinit(LruDiskCache cacheToCheck) {
         if (cacheToCheck == dummyCache || cacheToCheck == null) {
             scheduleReinit();
         }
@@ -143,26 +151,58 @@ public class LruCachesHolder {
         return getCacheOrReinit(commonCache);
     }
 
+    @Override
     public LruDiskCache getFastCache() {
         return getCacheOrReinit(fastCache);
     }
 
+    @Override
     public LruDiskCache getVodCache() {
         return getCacheOrReinit(vodCache);
     }
 
+    @Override
     public LruDiskCache getBundleCache() {
         return getCacheOrReinit(bundleCache);
     }
 
+    @Override
     public LruDiskCache getInfiniteCache() {
         return getCacheOrReinit(infiniteCache);
     }
 
+    @Override
     public VODCacheJournal getVodCacheJournal() {
         return vodCacheJournal;
     }
 
+    @Override
+    public void setCacheSizes(long freeSpace) {
+        switch (cacheSize) {
+            case CacheSize.SMALL:
+                fastCacheSize = MB_5;
+                commonCacheSize = MB_10;
+                break;
+            case CacheSize.LARGE:
+                commonCacheSize = MB_200;
+                break;
+        }
+        if (freeSpace < commonCacheSize + fastCacheSize + MB_10) {
+            commonCacheSize = MB_50;
+            if (freeSpace < commonCacheSize + fastCacheSize + MB_10) {
+                commonCacheSize = MB_10;
+                fastCacheSize = MB_5;
+                if (freeSpace < commonCacheSize + fastCacheSize + MB_10) {
+                    commonCacheSize = MB_1;
+                    fastCacheSize = MB_1;
+                }
+            }
+        }
+        getFastCache().setCacheSize(fastCacheSize);
+        getCommonCache().setCacheSize(commonCacheSize);
+    }
+
+    @Override
     public void clear() {
         try {
             fastCache.clearCache();
@@ -186,4 +226,32 @@ public class LruCachesHolder {
         }
         vodCacheJournal.clear();
     }
+
+    void runFreeSpaceCheck() {
+        checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
+    }
+
+    Runnable checkFreeSpace = new Runnable() {
+        @Override
+        public void run() {
+            if (isReinitializing) return;
+            LruDiskCache commonCache = getCommonCache();
+            LruDiskCache fastCache = getFastCache();
+            if (isReinitializing) return;
+            if (commonCache != null && fastCache != null) {
+                long freeSpace = commonCache.getCacheDir().getFreeSpace();
+                if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                    commonCache.setCacheSize(MB_50);
+                    if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                        commonCache.setCacheSize(MB_10);
+                        fastCache.setCacheSize(MB_5);
+                        if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                            commonCache.setCacheSize(MB_10);
+                            fastCache.setCacheSize(MB_5);
+                        }
+                    }
+                }
+            }
+        }
+    };
 }

@@ -5,7 +5,6 @@ import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.cache.DownloadThreadsHolder;
-import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 
 public interface IASContentLoader {
@@ -19,9 +18,7 @@ public interface IASContentLoader {
     void changeIamWereLoadedStatus(String tagsHash);
     void clearIamWereLoadedStatuses();
 
-    void clearCache();
+    void clear();
     void clearGames();
-    void setCacheSizes();
     void addVODResources(IReaderContent readerContent, int slideIndex);
-    void runFreeSpaceCheck();
 }
