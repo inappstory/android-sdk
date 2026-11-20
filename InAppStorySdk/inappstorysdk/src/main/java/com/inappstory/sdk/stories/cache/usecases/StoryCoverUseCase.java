@@ -50,9 +50,10 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                                             getStoryCoverCallback.error();
                                             return;
                                         }
-                                        CacheJournalItem cacheJournalItem = generateCacheItem();
-                                        cacheJournalItem.setSize(fileState.file.length());
-                                        cacheJournalItem.setDownloadedSize(fileState.file.length());
+                                        CacheJournalItem cacheJournalItem = generateCacheItem(
+                                                fileState.file.length(),
+                                                fileState.file.length()
+                                        );
                                         try {
                                             getCache().put(cacheJournalItem);
                                         } catch (Exception e) {
@@ -88,22 +89,6 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
             getStoryCoverCallback.success(filePath);
         }
         return null;
-    }
-
-    @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                null,
-                null,
-                null,
-                System.currentTimeMillis(),
-                0,
-                0,
-                null
-        );
     }
 
     @Override

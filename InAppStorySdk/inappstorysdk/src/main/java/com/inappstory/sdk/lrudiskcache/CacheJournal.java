@@ -7,11 +7,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.utils.CollectionUtils;
 
 import java.io.DataInputStream;
@@ -31,7 +31,8 @@ import java.util.UUID;
 
 public class CacheJournal {
     private long currentSize;
-    FileManager fileManager;
+    private final FileManager fileManager;
+    private final ExceptionManager exceptionManager;
 
     public static final int VERSION = 1;
     private File journalFile;
@@ -54,13 +55,21 @@ public class CacheJournal {
         putLink(item);
     }
 
-    public CacheJournal(FileManager fileManager) {
+    public CacheJournal(FileManager fileManager, ExceptionManager exceptionManager) {
         this.fileManager = fileManager;
-
+        this.exceptionManager = exceptionManager;
         this.journalThread = new HandlerThread("IAS_CacheJournal_Thread");
         this.journalThread.start();
         this.journalHandler = new Handler(journalThread.getLooper());
 
+        readJournal();
+    }
+
+    CacheJournal(FileManager fileManager, ExceptionManager exceptionManager, Handler testHandler) {
+        this.fileManager = fileManager;
+        this.exceptionManager = exceptionManager;
+        this.journalThread = null;
+        this.journalHandler = testHandler;
         readJournal();
     }
 
@@ -153,38 +162,24 @@ public class CacheJournal {
         }
     }
 
-    private void generateCacheOverflowLog(long newFileSize, long limitSize) {
-        ExceptionLog log = new ExceptionLog();
-        log.timestamp = System.currentTimeMillis();
-        log.id = UUID.randomUUID().toString();
-        log.message = "CacheOverflow";
-        log.stacktrace = "Current size: "
-                + currentSize
-                + "\nNew file size: "
-                + newFileSize
-                + "\nLimit size: "
-                + limitSize;
-        log.file = "DEBUG LOG";
-        log.line = 0;
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                log.session = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
-                InAppStoryManager.sendExceptionLog(log);
-            }
-        });
-    }
-
     private void removeOld(long newFileSize, long limitSize) throws IOException {
         if (currentSize + newFileSize > limitSize) {
-            generateCacheOverflowLog(newFileSize, limitSize);
+            if (exceptionManager != null)
+                exceptionManager.createExceptionLog(new CacheOverflowError(currentSize, newFileSize, limitSize));
             List<CacheJournalItem> items = CollectionUtils.mapOfArraysToArrayList(cacheItems);
             Collections.sort(items, new Utils.TimeComparator());
-            for (int i = items.size() - 1; i > 0; i--) {
+            for (int i = items.size() - 1; i >= 0; i--) {
                 CacheJournalItem item = items.remove(i);
+                String key = item.getUniqueKey();
                 fileManager.delete(item.getFilePath());
-                cacheItems.remove(item.getUniqueKey());
                 currentSize -= item.getSize();
+                List<CacheJournalItem> keyItems = cacheItems.get(key);
+                if (keyItems != null) {
+                    keyItems.remove(item);
+                    if (keyItems.isEmpty()) {
+                        cacheItems.remove(key);
+                    }
+                }
                 if (currentSize + newFileSize < limitSize) {
                     break;
                 }

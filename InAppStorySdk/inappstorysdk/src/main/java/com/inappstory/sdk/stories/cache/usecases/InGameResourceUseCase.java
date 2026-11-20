@@ -4,6 +4,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 import android.system.Os;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.GameNameHolder;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
@@ -26,11 +27,8 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
     private final FileChecker fileChecker = new FileChecker();
 
     private String getArchiveName(String url) {
-        String[] parts = url.split("/");
-        String fName = parts[parts.length - 1].split("\\.")[0];
-        String[] nameParts = fName.split("_");
-        if (nameParts.length > 0) return nameParts[0];
-        return "";
+
+        return new GameNameHolder().getGameName(url);
     }
 
     private List<String> symlinkKeys = new ArrayList<>();
@@ -120,8 +118,10 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
         ) instanceof FileCheckerSuccess) {
             useCaseCallback.onSuccess(null);
             try {
-                CacheJournalItem cacheJournalItem = generateCacheItem();
-                cacheJournalItem.setDownloadedSize(cacheJournalItem.getSize());
+                CacheJournalItem cacheJournalItem = generateCacheItem(
+                        resource.size,
+                        resource.size
+                );
                 getCache().put(cacheJournalItem);
             } catch (Exception ignored) {
 
@@ -139,6 +139,17 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
         if (!getLocalResource())
             downloadResource();
         return null;
+    }
+
+
+    @Override
+    protected String journalItemSha1() {
+        return resource.sha1;
+    }
+
+    @Override
+    protected String journalItemReplaceKey() {
+        return resource.key;
     }
 
     private void downloadResource() {
@@ -174,10 +185,11 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
                                             true
                                     );
                                     if (checkerResult instanceof FileCheckerSuccess) {
-                                        CacheJournalItem cacheJournalItem = generateCacheItem();
                                         long maxSize = Math.max(fileState.totalSize, fileState.downloadedSize);
-                                        cacheJournalItem.setSize(maxSize);
-                                        cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
+                                        CacheJournalItem cacheJournalItem = generateCacheItem(
+                                                maxSize,
+                                                fileState.downloadedSize
+                                        );
                                         try {
                                             getCache().put(cacheJournalItem);
                                         } catch (Exception e) {
@@ -229,22 +241,6 @@ public class InGameResourceUseCase extends GetCacheFileUseCase<Void> {
             core.exceptionManager().createExceptionLog(e);
             useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
         }
-    }
-
-    @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                null,
-                resource.sha1,
-                resource.key,
-                System.currentTimeMillis(),
-                resource.size,
-                0,
-                null
-        );
     }
 
     @Override

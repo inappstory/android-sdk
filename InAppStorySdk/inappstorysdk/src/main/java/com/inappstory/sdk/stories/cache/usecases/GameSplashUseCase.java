@@ -61,11 +61,10 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                                         splashScreen.sha1(),
                                         true
                                 ) instanceof FileCheckerSuccess) {
-                                    CacheJournalItem cacheJournalItem = generateCacheItem();
-
                                     long maxSize = Math.max(state.totalSize, state.downloadedSize);
-                                    cacheJournalItem.setSize(maxSize);
-                                    cacheJournalItem.setDownloadedSize(state.downloadedSize);
+                                    CacheJournalItem cacheJournalItem = generateCacheItem(
+                                            maxSize, state.downloadedSize
+                                    );
                                     try {
                                         getCache().put(cacheJournalItem);
                                     } catch (Exception e) {
@@ -101,21 +100,6 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
         return fileState[0];
     }
 
-    @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                null,
-                null,
-                null,
-                System.currentTimeMillis(),
-                0,
-                0,
-                null
-        );
-    }
 
     @Override
     protected LruDiskCache getCache() {

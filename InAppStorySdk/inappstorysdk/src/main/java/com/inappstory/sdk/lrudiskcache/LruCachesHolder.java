@@ -18,6 +18,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.vod.EmptyVODCacheJournal;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -36,6 +37,7 @@ public class LruCachesHolder implements ILruCachesHolder {
     private volatile LruDiskCache bundleCache = dummyCache;
     private volatile LruDiskCache vodCache = dummyCache;
     private final Context context;
+    private final ExceptionManager exceptionManager;
     private final int cacheSize;
     private long commonCacheSize = MB_100;
     private long fastCacheSize = MB_10;
@@ -51,13 +53,19 @@ public class LruCachesHolder implements ILruCachesHolder {
             final int cacheSize
     ) {
         this.context = core.appContext().getApplicationContext();
+        this.exceptionManager = core.exceptionManager();
         this.cacheSize = cacheSize;
         initExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                initializeCaches();
-                initializeVODJournal();
-                runFreeSpaceCheck();
+                try {
+                    initializeCaches();
+                    initializeVODJournal();
+                    runFreeSpaceCheck();
+                } catch (Exception e) {
+                    InAppStoryManager.showELog(LoggerTags.IAS_ERROR_TAG,
+                            "Failed to initialize caches: " + e.getMessage());
+                }
             }
         });
 
@@ -92,31 +100,36 @@ public class LruCachesHolder implements ILruCachesHolder {
                 cacheDir,
                 prefix + "fastCache",
                 fastCacheSize,
-                CacheType.FAST
+                CacheType.FAST,
+                exceptionManager
         );
         commonCache = new LruDiskCache(
                 cacheDir,
                 prefix + "commonCache",
                 commonCacheSize,
-                CacheType.COMMON
+                CacheType.COMMON,
+                exceptionManager
         );
         infiniteCache = new LruDiskCache(
                 cacheDir,
                 prefix + "infiniteCache",
                 cacheDir.getFreeSpace(),
-                CacheType.INFINITE
+                CacheType.INFINITE,
+                exceptionManager
         );
         bundleCache = new LruDiskCache(
                 cacheDir,
                 prefix + "bundleCache",
                 cacheDir.getFreeSpace(),
-                CacheType.BUNDLE
+                CacheType.BUNDLE,
+                exceptionManager
         );
         vodCache = new LruDiskCache(
                 cacheDir,
                 prefix + "vodCache",
                 MB_500,
-                CacheType.VOD
+                CacheType.VOD,
+                exceptionManager
         );
     }
 
@@ -125,11 +138,14 @@ public class LruCachesHolder implements ILruCachesHolder {
             return;
         }
 
-        initExecutor.submit(() -> {
-            try {
-                initializeCaches();
-            } finally {
-                isReinitializing.set(false);
+        initExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    initializeCaches();
+                } finally {
+                    isReinitializing.set(false);
+                }
             }
         });
     }
@@ -174,7 +190,18 @@ public class LruCachesHolder implements ILruCachesHolder {
 
     @Override
     public void setCacheSizes(long freeSpace) {
+        LruDiskCache fast = getFastCache();
+        LruDiskCache common = getCommonCache();
+
+        if (fast == dummyCache || common == dummyCache) {
+            return;
+        }
+
         switch (cacheSize) {
+            case CacheSize.MEDIUM:
+                fastCacheSize = MB_10;
+                commonCacheSize = MB_50;
+                break;
             case CacheSize.SMALL:
                 fastCacheSize = MB_5;
                 commonCacheSize = MB_10;
@@ -189,8 +216,8 @@ public class LruCachesHolder implements ILruCachesHolder {
                 commonCacheSize = MB_10;
                 fastCacheSize = MB_5;
                 if (freeSpace < commonCacheSize + fastCacheSize + MB_10) {
-                    getFastCache().setCacheSize(MB_1);
-                    getCommonCache().setCacheSize(MB_1);
+                    fastCacheSize = MB_1;
+                    commonCacheSize = MB_1;
                     InAppStoryManager.showELog(
                             LoggerTags.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
@@ -198,12 +225,11 @@ public class LruCachesHolder implements ILruCachesHolder {
                                     R.string.ias_min_free_space_error
                             )
                     );
-                    return;
                 }
             }
         }
-        getFastCache().setCacheSize(fastCacheSize);
-        getCommonCache().setCacheSize(commonCacheSize);
+        fast.setCacheSize(fastCacheSize);
+        common.setCacheSize(commonCacheSize);
     }
 
     @Override

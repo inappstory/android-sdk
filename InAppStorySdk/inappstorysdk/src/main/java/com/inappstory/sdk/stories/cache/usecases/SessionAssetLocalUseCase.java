@@ -73,19 +73,23 @@ public class SessionAssetLocalUseCase extends GetCacheFileUseCase<Void> {
     }
 
     @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                cacheObject.type,
-                cacheObject.sha1,
-                cacheObject.replaceKey,
-                System.currentTimeMillis(),
-                cacheObject.size,
-                0,
-                cacheObject.mimeType
-        );
+    protected String journalItemType() {
+        return cacheObject.type;
+    }
+
+    @Override
+    protected String journalItemSha1() {
+        return cacheObject.sha1;
+    }
+
+    @Override
+    protected String journalItemReplaceKey() {
+        return cacheObject.replaceKey;
+    }
+
+    @Override
+    protected String journalItemMimeType() {
+        return cacheObject.mimeType;
     }
 
     @Override

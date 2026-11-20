@@ -1,5 +1,7 @@
 package com.inappstory.sdk.lrudiskcache;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 
 import java.io.BufferedReader;
@@ -28,7 +30,10 @@ public class FileManager {
             cacheDir.mkdirs();
             if (!file.exists()) file.createNewFile();
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryManager.showELog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    "Can't get journal file: " + CacheJournal.JOURNAL_NAME
+            );
         }
         return file;
     }
@@ -43,24 +48,24 @@ public class FileManager {
     }
 
     public static String getStringFromFile(File fl) throws Exception {
-        FileInputStream fin = new FileInputStream(fl);
-        String ret = convertStreamToString(fin);
-        fin.close();
-        return ret;
+        try (FileInputStream fin = new FileInputStream(fl)) {
+            return convertStreamToString(fin);
+        }
     }
 
     private static String convertStreamToString(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
         }
-        reader.close();
         return sb.toString();
     }
 
     public static boolean deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory == null) return false;
         boolean res = true;
         if (fileOrDirectory.isDirectory()) {
             for (File child : fileOrDirectory.listFiles()) {
@@ -85,7 +90,7 @@ public class FileManager {
         if (deleteRoot) {
             try {
                 if (excludePattern != null &&
-                        fileOrDirectory.getAbsolutePath().contains(excludePattern)) return;
+                        fileOrDirectory.getName().equals(excludePattern)) return;
                 fileOrDirectory.delete();
             } catch (Exception e) {
 
@@ -103,13 +108,13 @@ public class FileManager {
 
     private boolean checkAndUse(File baseDir, String subPath) throws IOException {
         if (baseDir == null) return false;
-        File file = new File(baseDir + subPath);
+        File file = new File(baseDir, subPath);
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 if (!baseDir.canWrite()) {
                     return false;
                 } else {
-                    File file1 = new File(baseDir + File.separator + "testFile");
+                    File file1 = new File(baseDir,"testFile");
                     if (file1.createNewFile()) {
                         file1.delete();
                         cacheDir = baseDir;
@@ -121,7 +126,7 @@ public class FileManager {
 
             }
         }
-        cacheDir = new File(baseDir + subPath);
+        cacheDir = new File(baseDir, subPath);
         return true;
     }
 
@@ -140,13 +145,12 @@ public class FileManager {
 
     public File put(File extFile, String name) throws IOException {
         File newFile = new File(name);
-        if ((cacheDir.exists() || cacheDir.mkdirs())
-                | (newFile.exists())
-                | extFile.renameTo(newFile)) {
-            return newFile;
-        } else {
-            throw formatException("Unable to use file %s", extFile);
+        if (cacheDir.exists() || cacheDir.mkdirs()) {
+            if (newFile.exists() || extFile.renameTo(newFile)) {
+                return newFile;
+            }
         }
+        throw formatException("Unable to use file %s", extFile);
     }
 
     private IOException formatException(String format, File file) {

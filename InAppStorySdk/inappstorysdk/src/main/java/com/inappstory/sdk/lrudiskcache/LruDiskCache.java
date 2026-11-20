@@ -1,6 +1,7 @@
 package com.inappstory.sdk.lrudiskcache;
 
 import com.inappstory.sdk.stories.cache.DownloadFileState;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 
 import java.io.File;
 import java.util.HashSet;
@@ -33,11 +34,12 @@ public class LruDiskCache {
             File cacheDir,
             String subPath,
             long cacheSize,
-            CacheType cacheType
+            CacheType cacheType,
+            ExceptionManager exceptionManager
     ) {
         try {
             this.manager = new FileManager(cacheDir, subPath);
-            this.journal = new CacheJournal(manager);
+            this.journal = new CacheJournal(manager, exceptionManager);
             this.cacheSize = cacheSize;
             this.cacheType = cacheType;
         } catch (Exception e) {
@@ -166,6 +168,32 @@ public class LruDiskCache {
                 return null;
             }
             return null;
+        }
+    }
+
+    public void deleteArchiveAndExtractedFolder(String key, String type) throws Exception {
+        synchronized (lock) {
+            journal.delete(key, type, true);
+            journal.scheduleWriteJournal();
+            File expectedFile = getFileFromKey(key);
+            File extractDir = new File(expectedFile.getParentFile(), key);
+
+            if (extractDir.exists() && extractDir.isDirectory()) {
+                FileManager.deleteFolderRecursive(extractDir, true, null);
+            }
+        }
+    }
+
+    public void clearOldArchiveVersions(String archiveName, boolean inclusive) {
+        File cacheDir = getCacheDir();
+        File archiveDir = new File(new File(new File(cacheDir, "v2"), "zip"), archiveName);
+        File expectedBase = new File(new File(cacheDir, "v2"), "zip");
+        if (!archiveDir.getAbsolutePath().startsWith(expectedBase.getAbsolutePath())) {
+            return;
+        }
+
+        if (archiveDir.exists() && archiveDir.isDirectory()) {
+            FileManager.deleteFolderRecursive(archiveDir, inclusive, null);
         }
     }
 

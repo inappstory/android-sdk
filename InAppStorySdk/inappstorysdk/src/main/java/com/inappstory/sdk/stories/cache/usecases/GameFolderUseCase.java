@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.GameNameHolder;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UnzipUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -54,11 +55,8 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
     }
 
     private String getArchiveName(String url) {
-        String[] parts = url.split("/");
-        String fName = parts[parts.length - 1].split("\\.")[0];
-        String[] nameParts = fName.split("_");
-        if (nameParts.length > 0) return nameParts[0];
-        return "";
+
+        return new GameNameHolder().getGameName(url);
     }
 
     private boolean checkDirectory(File directory) {
@@ -88,8 +86,9 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
 
     private void putToCache(long size) {
         try {
-            CacheJournalItem cacheJournalItem = generateCacheItem();
-            cacheJournalItem.setSize(size);
+            CacheJournalItem cacheJournalItem = generateCacheItem(
+                    size, size
+            );
             getCache().put(cacheJournalItem, type);
         } catch (Exception e) {
 
@@ -144,6 +143,7 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
         return null;
     }
 
+
     private long getFileSize(final File file) {
         if (file == null || !file.exists())
             return 0;
@@ -157,7 +157,7 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
             if (!dir.exists())
                 continue;
             final File[] listFiles = dir.listFiles();
-            if (listFiles == null || listFiles.length == 0)
+            if (listFiles == null)
                 continue;
             for (final File child : listFiles) {
                 if (child.isDirectory()) {
@@ -171,20 +171,10 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
     }
 
     @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                type,
-                null,
-                null,
-                System.currentTimeMillis(),
-                0,
-                0,
-                null
-        );
+    protected String journalItemType() {
+        return type;
     }
+
 
     @Override
     protected LruDiskCache getCache() {

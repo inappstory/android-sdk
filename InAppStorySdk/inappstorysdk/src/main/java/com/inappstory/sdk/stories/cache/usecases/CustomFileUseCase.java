@@ -54,11 +54,10 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                             getFileCallback.onError(new SimpleUseCaseError(""));
                                             return;
                                         }
-                                        CacheJournalItem cacheJournalItem = generateCacheItem();
-
                                         long maxSize = Math.max(fileState.totalSize, fileState.downloadedSize);
-                                        cacheJournalItem.setSize(maxSize);
-                                        cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
+                                        CacheJournalItem cacheJournalItem = generateCacheItem(
+                                                maxSize, fileState.downloadedSize
+                                        );
                                         try {
                                             getCache().put(cacheJournalItem);
                                         } catch (Exception e) {
@@ -94,22 +93,6 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
             getFileCallback.onSuccess(new File(filePath));
         }
         return null;
-    }
-
-    @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                null,
-                null,
-                null,
-                System.currentTimeMillis(),
-                0,
-                0,
-                null
-        );
     }
 
     @Override

@@ -58,9 +58,10 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                         useCaseCallback.onError(new SimpleUseCaseError("Can't download bundle file: " + cacheObject.url));
                         return;
                     }
-                    CacheJournalItem cacheJournalItem = generateCacheItem();
-                    cacheJournalItem.setSize(fileState.file.length());
-                    cacheJournalItem.setDownloadedSize(fileState.file.length());
+                    CacheJournalItem cacheJournalItem = generateCacheItem(
+                            fileState.file.length(),
+                            fileState.file.length()
+                    );
                     try {
                         getCache().put(cacheJournalItem);
                     } catch (Exception e) {
@@ -125,20 +126,25 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     }
 
     @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                cacheObject.type,
-                cacheObject.sha1,
-                cacheObject.replaceKey,
-                System.currentTimeMillis(),
-                cacheObject.size,
-                0,
-                cacheObject.mimeType
-        );
+    protected String journalItemType() {
+        return cacheObject.type;
     }
+
+    @Override
+    protected String journalItemSha1() {
+        return cacheObject.sha1;
+    }
+
+    @Override
+    protected String journalItemReplaceKey() {
+        return cacheObject.replaceKey;
+    }
+
+    @Override
+    protected String journalItemMimeType() {
+        return cacheObject.mimeType;
+    }
+
 
     @Override
     protected LruDiskCache getCache() {

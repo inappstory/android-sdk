@@ -11,6 +11,7 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.parse.from.FromExceptionLog;
 import com.inappstory.sdk.parse.to.ToExceptionLog;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.logs.CanBeConvertedToExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 
 import java.util.UUID;
@@ -26,7 +27,7 @@ public class ExceptionManager {
 
     public void createExceptionLog(Throwable throwable) {
         ExceptionLog el = generateExceptionLog(throwable);
-        Log.d("EXCEPTION", throwable.getMessage() + "");
+      //  Log.d("EXCEPTION", throwable.getMessage() + "");
         saveException(el);
         sendException(el);
     }
@@ -83,6 +84,13 @@ public class ExceptionManager {
 
 
     private ExceptionLog generateExceptionLog(Throwable throwable) {
+        if (throwable instanceof CanBeConvertedToExceptionLog) {
+            ExceptionLog log = ((CanBeConvertedToExceptionLog) throwable).toExceptionLog();
+            log.id = UUID.randomUUID().toString();
+            log.timestamp = System.currentTimeMillis();
+            log.session = ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty();
+            return log;
+        }
         ExceptionLog log = new ExceptionLog();
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();

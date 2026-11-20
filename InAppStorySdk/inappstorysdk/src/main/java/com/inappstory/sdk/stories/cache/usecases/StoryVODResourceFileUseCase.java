@@ -101,10 +101,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                     vodJournalItem.setFullSize(bytesForRange.range().length());
                     vodCacheJournal.putItem(vodJournalItem);
                     long size = vodJournalItem.getDownloadedSize();
-
-                    CacheJournalItem cacheJournalItem = generateCacheItem();
-                    cacheJournalItem.setSize(size);
-                    cacheJournalItem.setDownloadedSize(size);
+                    CacheJournalItem cacheJournalItem = generateCacheItem(size, size);
                     getCache().put(cacheJournalItem);
                     return new StoryVODResourceFileUseCaseResult(
                             bytesForRange.range(),
@@ -117,22 +114,6 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                null,
-                null,
-                null,
-                System.currentTimeMillis(),
-                0,
-                0,
-                null
-        );
     }
 
     private VODCacheJournalItem generateVODCacheItem() {

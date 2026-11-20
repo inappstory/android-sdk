@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.utils.GameConstants;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.interfaces.ConditionsResult;
 import com.inappstory.sdk.stories.api.interfaces.GLCError;
@@ -322,6 +323,7 @@ public class GameCacheManager {
                         new ArchiveUseCase(
                                 core,
                                 archiveUrl,
+                                new FileChecker(),
                                 data.archiveSize,
                                 data.archiveSha1,
                                 finalTotalFilesSize,

@@ -64,17 +64,17 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
                         CachedSessionData sessionData = settingsHolder.sessionData();
                         NetworkCallback<LayoutResponse> layoutCallback =
                                 new NetworkCallback<LayoutResponse>() {
-                            @Override
-                            public void onSuccess(LayoutResponse response) {
-                                writeToFile(response.layout);
-                                useCaseCallback.onSuccess(response.layout);
-                            }
+                                    @Override
+                                    public void onSuccess(LayoutResponse response) {
+                                        writeToFile(response.layout);
+                                        useCaseCallback.onSuccess(response.layout);
+                                    }
 
-                            @Override
-                            public void errorDefault(String message) {
-                                useCaseCallback.onError(new SimpleUseCaseError(""));
-                            }
-                        };
+                                    @Override
+                                    public void errorDefault(String message) {
+                                        useCaseCallback.onError(new SimpleUseCaseError(""));
+                                    }
+                                };
                         core.network().enqueue(
                                 core.network().getApi().getLayout(
                                         sessionData.userId,
@@ -95,6 +95,12 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
             downloadFile();
         return null;
     }
+
+    @Override
+    protected String journalItemType() {
+        return "ias_layout";
+    }
+
 
     public boolean getLocalFile() {
         CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
@@ -128,7 +134,7 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
         }
         try (FileOutputStream stream = new FileOutputStream(filePath)) {
             stream.write(layout.getBytes());
-            getCache().put(generateCacheItem());
+            getCache().put(generateCacheItem(layout.length(), layout.length()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -143,22 +149,6 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
             return null;
         }
         return new String(bytes);
-    }
-
-    @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                "ias_layout",
-                null,
-                null,
-                System.currentTimeMillis(),
-                0,
-                0,
-                null
-        );
     }
 
     @Override

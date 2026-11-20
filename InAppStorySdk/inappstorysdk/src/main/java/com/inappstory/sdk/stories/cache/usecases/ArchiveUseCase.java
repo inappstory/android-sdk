@@ -4,14 +4,16 @@ import static java.util.UUID.randomUUID;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.GameNameHolder;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.FileCheckerError;
 import com.inappstory.sdk.lrudiskcache.FileCheckerResult;
-import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
@@ -22,6 +24,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.io.File;
 
 public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
+
     private final String url;
     private final String archiveName;
     private final String archiveSha1;
@@ -31,12 +34,13 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     private final ProgressCallback progressCallback;
     private final DownloadInterruption interruption;
     private final UseCaseCallback<File> useCaseCallback;
-    private final FileChecker fileChecker = new FileChecker();
+    private final FileChecker fileChecker;
     private final boolean useLocalFile;
 
     public ArchiveUseCase(
             IASCore core,
             String url,
+            FileChecker fileChecker,
             long archiveSize,
             String archiveSha1,
             long totalFilesSize,
@@ -46,6 +50,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
             boolean useLocalFile
     ) {
         super(core);
+        this.fileChecker = fileChecker;
         this.url = url;
         this.totalFilesSize = totalFilesSize;
         this.uniqueKey = StringsUtils.md5(url);
@@ -56,24 +61,20 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
         this.interruption = interruption;
         this.useCaseCallback = useCaseCallback;
         this.useLocalFile = useLocalFile;
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
+        File cacheDir = getCache().getCacheDir();
+        String fileName = this.uniqueKey + StringsUtils.getExtensionFromUrl(url);
+        String subPath = "v2" +
                 File.separator +
                 "zip" +
                 File.separator +
-                archiveName +
+                this.archiveName +
                 File.separator +
-                uniqueKey +
-                StringsUtils.getExtensionFromUrl(url);
+                fileName;
+        this.filePath = new File(cacheDir, subPath).getAbsolutePath();
     }
 
     private String getArchiveName(String url) {
-        String[] parts = url.split("/");
-        String fName = parts[parts.length - 1].split("\\.")[0];
-        String[] nameParts = fName.split("_");
-        if (nameParts.length > 0) return nameParts[0];
-        return "";
+        return new GameNameHolder().getGameName(url);
     }
 
     @Override
@@ -82,19 +83,22 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
         if (!useLocalFile) {
             removeOldVersions(true);
             try {
-                getCache().delete(generateCacheItem(), type);
+                getCache().delete(generateCacheItem(0, 0), type);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                InAppStoryManager.showDLog(
+                        LoggerTags.IAS_WARN_TAG,
+                        "Failed to delete old version. Error: " + e.getMessage()
+                );
             }
             downloadLog.generateRequestLog(url);
             downloadArchive();
-        } else if (!getLocalArchive()) {
+        } else if (!useLocalArchive()) {
             downloadArchive();
         }
         return null;
     }
 
-    private boolean getLocalArchive() {
+    private boolean useLocalArchive() {
         LruDiskCache cache = getCache();
         File cachedArchive = cache.getFullFile(uniqueKey, type);
 
@@ -106,18 +110,15 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                     archiveSha1,
                     true
             ) instanceof FileCheckerError) {
-                File directory = new File(
-                        cachedArchive.getParent() +
-                                File.separator + uniqueKey);
                 try {
-                    cache.delete(uniqueKey);
-                    if (directory.exists()) {
-                        FileManager.deleteRecursive(directory);
-                    }
+                    cache.deleteArchiveAndExtractedFolder(uniqueKey, type);
                 } catch (Exception e) {
-
+                    InAppStoryManager.showDLog(
+                            LoggerTags.IAS_WARN_TAG,
+                            "Failed to delete invalid archive directory. Error: " + e.getMessage()
+                    );
                 }
-                useCaseCallback.onError(null);
+                useCaseCallback.onError(new SimpleUseCaseError("Invalid archive deleted"));
                 return false;
             } else {
                 useCaseCallback.onSuccess(cachedArchive);
@@ -132,149 +133,159 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     }
 
     private void removeOldVersions(boolean inclusive) {
-        File gameDir = new File(
-                getCache().getCacheDir().getAbsolutePath() +
-                        File.separator +
-                        "v2" +
-                        File.separator +
-                        "zip" +
-                        File.separator +
-                        archiveName +
-                        File.separator
-        );
-        if (!gameDir.getAbsolutePath().startsWith(
-                getCache().getCacheDir().getAbsolutePath() +
-                        File.separator +
-                        "v2" +
-                        File.separator +
-                        "zip")
-        ) {
-            return;
-        }
-        if (gameDir.exists() && gameDir.isDirectory()) {
-            File[] files = gameDir.listFiles();
-            if (files == null) return;
-            for (File gameDirFile : files) {
-                FileManager.deleteRecursive(gameDirFile);
-            }
-        }
-        if (inclusive) {
-            gameDir.delete();
+        try {
+            getCache().clearOldArchiveVersions(archiveName, inclusive);
+        } catch (Exception e) {
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_WARN_TAG,
+                    "Failed to clear old archive versions. Error: " + e.getMessage()
+            );
         }
     }
 
     private void downloadArchive() {
         downloadLog.sendRequestLog();
-        if (!filePath.startsWith(
-                getCache().getCacheDir().getAbsolutePath() +
-                        File.separator +
-                        "v2" +
-                        File.separator +
-                        "zip")
-        ) {
-            useCaseCallback.onError(new SimpleUseCaseError("Error in game name"));
+
+        if (!validateDownloadPreconditions()) {
             return;
         }
-        if (totalFilesSize > getCache().getCacheDir().getFreeSpace()) {
-            useCaseCallback.onError(new SimpleUseCaseError("No free space for download"));
-            return;
-        }
+
         final String hash = randomUUID().toString();
-        DownloadFileState fileState = getCache().get(uniqueKey);
-        long offset = 0;
-        if (fileState != null) {
-            offset = fileState.downloadedSize;
-        }
+        long offset = getDownloadOffset();
+
         core.statistic().profiling().addTask("game_download", hash);
+        downloadLog.generateResponseLog(false, filePath);
+
         try {
-            downloadLog.generateResponseLog(false, filePath);
-
-            FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                @Override
-                public void finish(DownloadFileState fileState) {
-                    if (fileState != null && fileState.file != null) {
-                        if (fileState.isFullDownload()) {
-                            FileCheckerResult checkerResult = fileChecker.checkWithShaAndSize(
-                                    fileState.file,
-                                    archiveSize,
-                                    archiveSha1,
-                                    true
-                            );
-                            if (checkerResult instanceof FileCheckerError) {
-                                useCaseCallback.onError(
-                                        new SimpleUseCaseError(
-                                                "Game archive sha or size is incorrect: " + checkerResult
-                                        )
-                                );
-                            } else {
-                                useCaseCallback.onSuccess(fileState.file);
-                            }
-                            core.statistic().profiling().setReady(hash);
-                            downloadLog.sendResponseLog();
-                        }
-                        CacheJournalItem cacheJournalItem = generateCacheItem();
-                        long maxSize = Math.max(fileState.totalSize, fileState.downloadedSize);
-                        cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
-                        cacheJournalItem.setSize(maxSize);
-                        try {
-                            getCache().put(cacheJournalItem, type);
-                        } catch (Exception ignored) {
-
-                        }
-                    } else {
-                        useCaseCallback.onError(new SimpleUseCaseError("File downloading was interrupted"));
-                    }
-                }
-
-                @Override
-                public void waiting() {
-
-                }
-            };
-            core.filesDownloader()
-                    .downloadFile(
-                            url,
-                            new File(filePath),
-                            new FileLoadProgressCallback() {
-                                @Override
-                                public void onProgress(long loadedSize, long totalSize) {
-                                    progressCallback.onProgress(loadedSize, totalSize);
-                                }
-
-                                @Override
-                                public void onSuccess(File file) {
-
-                                }
-
-                                @Override
-                                public void onError(String error) {
-                                    useCaseCallback.onError(new SimpleUseCaseError(error));
-                                }
-                            },
-                            downloadLog.responseLog,
-                            interruption,
-                            offset,
-                            callback
-                    );
+            initiateDownload(hash, offset);
         } catch (Exception e) {
             useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
         }
     }
 
-    @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                type,
-                archiveSha1,
-                null,
-                System.currentTimeMillis(),
-                0,
-                0,
-                null
+    private boolean validateDownloadPreconditions() {
+        File cacheDir = getCache().getCacheDir();
+        if (!filePath.startsWith(
+                cacheDir.getAbsolutePath() +
+                File.separator +
+                "v2" +
+                File.separator +
+                "zip"
+        )) {
+            useCaseCallback.onError(new SimpleUseCaseError("Error in game name"));
+            return false;
+        }
+
+        if (totalFilesSize > cacheDir.getFreeSpace()) {
+            useCaseCallback.onError(new SimpleUseCaseError("No free space for download"));
+            return false;
+        }
+
+        return true;
+    }
+
+    private long getDownloadOffset() {
+        DownloadFileState fileState = getCache().get(uniqueKey);
+        return (fileState != null) ? fileState.downloadedSize : 0;
+    }
+
+    private void initiateDownload(String hash, long offset) {
+        FinishDownloadFileCallback finishCallback = createFinishCallback(hash);
+        FileLoadProgressCallback progressCallback = createProgressCallback();
+
+        core.filesDownloader().downloadFile(
+                url,
+                new File(filePath),
+                progressCallback,
+                downloadLog.responseLog,
+                interruption,
+                offset,
+                finishCallback
         );
+    }
+
+    private FinishDownloadFileCallback createFinishCallback(final String hash) {
+        return new FinishDownloadFileCallback() {
+            @Override
+            public void finish(DownloadFileState state) {
+                if (state == null || state.file == null) {
+                    useCaseCallback.onError(new SimpleUseCaseError("File downloading was interrupted"));
+                    return;
+                }
+
+                if (state.isFullDownload()) {
+                    handleFullDownloadCompletion(state, hash);
+                }
+
+                updateCacheJournal(state);
+            }
+
+            @Override
+            public void waiting() {
+            }
+        };
+    }
+
+    private void handleFullDownloadCompletion(DownloadFileState state, String hash) {
+        FileCheckerResult checkerResult = fileChecker.checkWithShaAndSize(
+                state.file,
+                archiveSize,
+                archiveSha1,
+                true
+        );
+
+        if (checkerResult instanceof FileCheckerError) {
+            useCaseCallback.onError(new SimpleUseCaseError(
+                    "Game archive sha or size is incorrect: " + checkerResult
+            ));
+        } else {
+            useCaseCallback.onSuccess(state.file);
+        }
+
+        core.statistic().profiling().setReady(hash);
+        downloadLog.sendResponseLog();
+    }
+
+    private void updateCacheJournal(DownloadFileState state) {
+        long maxSize = Math.max(state.totalSize, state.downloadedSize);
+        CacheJournalItem cacheJournalItem = generateCacheItem(maxSize, state.downloadedSize);
+
+        try {
+            getCache().put(cacheJournalItem, type);
+        } catch (Exception e) {
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_WARN_TAG,
+                    "Failed to update cache journal after download. Error: " + e.getMessage()
+            );
+        }
+    }
+
+    private FileLoadProgressCallback createProgressCallback() {
+        return new FileLoadProgressCallback() {
+            @Override
+            public void onProgress(long loadedSize, long totalSize) {
+                progressCallback.onProgress(loadedSize, totalSize);
+            }
+
+            @Override
+            public void onSuccess(File file) {
+            }
+
+            @Override
+            public void onError(String error) {
+                useCaseCallback.onError(new SimpleUseCaseError(error));
+            }
+        };
+    }
+
+    @Override
+    protected String journalItemType() {
+        return type;
+    }
+
+    @Override
+    protected String journalItemSha1() {
+        return archiveSha1;
     }
 
     @Override

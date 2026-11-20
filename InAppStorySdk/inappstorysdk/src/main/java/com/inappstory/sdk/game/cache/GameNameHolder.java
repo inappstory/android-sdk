@@ -1,7 +1,7 @@
 package com.inappstory.sdk.game.cache;
 
 public class GameNameHolder {
-    protected String getGameName(String url) {
+    public String getGameName(String url) {
         String[] parts = url.split("/");
         String fName = parts[parts.length - 1].split("\\.")[0];
         String[] nameParts = fName.split("_");

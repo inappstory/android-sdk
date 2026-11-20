@@ -3,6 +3,7 @@ package com.inappstory.sdk.game.preload;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.DownloadResourcesUseCase;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.GameArchiveItem;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -111,6 +112,7 @@ public class LoadGameFilesUseCase {
                 new ArchiveUseCase(
                         core,
                         archiveUrl,
+                        new FileChecker(),
                         data.archiveSize(),
                         data.archiveSha1(),
                         finalTotalFilesSize,

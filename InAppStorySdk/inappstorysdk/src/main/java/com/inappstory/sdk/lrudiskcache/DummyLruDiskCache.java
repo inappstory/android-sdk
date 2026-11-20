@@ -12,9 +12,8 @@ public class DummyLruDiskCache extends LruDiskCache {
         return new File("");
     }
 
-    DummyLruDiskCache(
-    ) {
-        super(null, null, 0, null);
+    DummyLruDiskCache() {
+        super(null, null, 0, null, null);
     }
 
 

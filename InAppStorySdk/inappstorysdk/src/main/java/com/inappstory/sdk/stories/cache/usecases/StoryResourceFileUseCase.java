@@ -46,10 +46,9 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                         if (state == null || !state.isFullDownload()) {
                             return;
                         }
-                        CacheJournalItem cacheJournalItem = generateCacheItem();
+                        CacheJournalItem cacheJournalItem
+                                = generateCacheItem(state.file.length(), state.file.length());
 
-                        cacheJournalItem.setSize(state.file.length());
-                        cacheJournalItem.setDownloadedSize(state.file.length());
                         try {
                             getCache().put(cacheJournalItem);
                         } catch (Exception e) {
@@ -79,22 +78,6 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
             downloadLog.sendRequestResponseLog();
         }
         return fileState[0];
-    }
-
-    @Override
-    protected CacheJournalItem generateCacheItem() {
-        return new CacheJournalItem(
-                uniqueKey,
-                filePath,
-                null,
-                null,
-                null,
-                null,
-                System.currentTimeMillis(),
-                0,
-                0,
-                null
-        );
     }
 
     @Override

@@ -108,21 +108,21 @@ public class CacheJournalItem implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         CacheJournalItem item = (CacheJournalItem) o;
         if (time != item.time) return false;
-        if (Objects.equals(sha1, item.sha1)) return false;
-        if (Objects.equals(uniqueKey, item.uniqueKey)) return false;
-        if (Objects.equals(type, item.type)) return false;
-        if (Objects.equals(replaceKey, item.replaceKey)) return false;
+        if (!Objects.equals(sha1, item.sha1)) return false;
+        if (!Objects.equals(uniqueKey, item.uniqueKey)) return false;
+        if (!Objects.equals(type, item.type)) return false;
+        if (!Objects.equals(replaceKey, item.replaceKey)) return false;
         return filePath.equals(item.filePath);
     }
 
     @Override
     public int hashCode() {
-        int result = getUniqueKey().hashCode();
-        result = 31 * result + getFilePath().hashCode();
-        result = 31 * result + getType().hashCode();
-        result = 31 * result + getExt().hashCode();
-        result = 31 * result + getReplaceKey().hashCode();
-        result = 31 * result + getSha1().hashCode();
+        int result = uniqueKey != null ? uniqueKey.hashCode() : 0;
+        result = 31 * result + (filePath != null ? filePath.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (ext != null ? ext.hashCode() : 0);
+        result = 31 * result + (replaceKey != null ? replaceKey.hashCode() : 0);
+        result = 31 * result + (sha1 != null ? sha1.hashCode() : 0);
         result = 31 * result + (int) (time ^ (time >>> 32));
         return result;
     }
