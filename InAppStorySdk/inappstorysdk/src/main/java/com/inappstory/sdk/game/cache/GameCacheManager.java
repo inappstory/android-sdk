@@ -1,6 +1,5 @@
 package com.inappstory.sdk.game.cache;
 
-import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.utils.GameConstants;
@@ -60,6 +59,7 @@ public class GameCacheManager {
         final String staticKey = GameConstants.SPLASH_STATIC;
         final String animStorageKey = GameConstants.SPLASH_ANIM_KV;
         final String staticStorageKey = GameConstants.SPLASH_STATIC_KV;
+
         GetLocalSplashUseCase getLocalStaticSplashUseCase = new GetLocalSplashUseCase(
                 core,
                 gameId,
@@ -127,8 +127,10 @@ public class GameCacheManager {
                     );
                     return;
                 }
+                FileChecker fileChecker = new FileChecker();
                 final List<GameArchiveItem> archiveItems = data.archiveItems();
                 final String archiveUrl = data.url;
+                String gameName = new GameNameHolder().getGameName(archiveUrl);
                 final DownloadSplashUseCase downloadAnimSplashUseCase;
                 if (useAnimSplash) {
                     String animFilePath = null;
@@ -138,6 +140,7 @@ public class GameCacheManager {
                     }
                     downloadAnimSplashUseCase = new DownloadSplashUseCase(
                             core,
+                            fileChecker,
                             data.splashAnimation,
                             animFilePath,
                             animStorageKey,
@@ -156,6 +159,7 @@ public class GameCacheManager {
 
                 DownloadSplashUseCase downloadSplashUseCase = new DownloadSplashUseCase(
                         core,
+                        fileChecker,
                         data.splashScreen,
                         staticFilePath,
                         staticStorageKey,
@@ -235,9 +239,11 @@ public class GameCacheManager {
                 final DownloadResourcesUseCase downloadResourcesUseCase =
                         new DownloadResourcesUseCase(
                                 core,
+                                fileChecker,
                                 data.resources,
                                 gameId,
                                 archiveUrl,
+                                gameName,
                                 interruption,
                                 new ProgressCallback() {
                                     @Override
@@ -286,6 +292,8 @@ public class GameCacheManager {
                 final GameFolderUseCase gameFolderUseCase = new GameFolderUseCase(
                         core,
                         archiveUrl,
+                        gameName,
+                        fileChecker,
                         archiveItems,
                         new UseCaseCallback<String>() {
                             @Override
@@ -323,7 +331,8 @@ public class GameCacheManager {
                         new ArchiveUseCase(
                                 core,
                                 archiveUrl,
-                                new FileChecker(),
+                                gameName,
+                                fileChecker,
                                 data.archiveSize,
                                 data.archiveSha1,
                                 finalTotalFilesSize,

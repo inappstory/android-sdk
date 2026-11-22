@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.preload;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.DownloadResourcesUseCase;
+import com.inappstory.sdk.game.cache.GameNameHolder;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
@@ -23,13 +24,16 @@ public class LoadGameFilesUseCase {
     private final List<IGameCenterData> gamesData;
     private final DownloadInterruption interruption;
     private final IASCore core;
+    private final FileChecker fileChecker;
 
     public LoadGameFilesUseCase(
             IASCore core,
+            FileChecker fileChecker,
             List<IGameCenterData> gamesData,
             DownloadInterruption interruption
     ) {
         this.core = core;
+        this.fileChecker = fileChecker;
         this.gamesData = gamesData;
         this.interruption = interruption;
     }
@@ -50,6 +54,7 @@ public class LoadGameFilesUseCase {
         if (data.url() == null || data.url().isEmpty()) return;
         final List<GameArchiveItem> archiveItems = data.archiveItems();
         final String archiveUrl = data.url();
+        final String gameName = new GameNameHolder().getGameName(archiveUrl);
         final ProgressCallback emptyProgress = new EmptyProgressCallback();
         final long totalArchiveSize;
         final long totalResourcesSize;
@@ -76,9 +81,11 @@ public class LoadGameFilesUseCase {
         final DownloadResourcesUseCase downloadResourcesUseCase =
                 new DownloadResourcesUseCase(
                         core,
+                        fileChecker,
                         data.resources(),
                         data.id(),
                         archiveUrl,
+                        gameName,
                         interruption,
                         emptyProgress,
                         new SuccessUseCaseCallback<Void>() {
@@ -94,6 +101,8 @@ public class LoadGameFilesUseCase {
         final GameFolderUseCase gameFolderUseCase = new GameFolderUseCase(
                 core,
                 archiveUrl,
+                gameName,
+                fileChecker,
                 archiveItems,
                 new SuccessUseCaseCallback<String>() {
                     @Override
@@ -112,7 +121,8 @@ public class LoadGameFilesUseCase {
                 new ArchiveUseCase(
                         core,
                         archiveUrl,
-                        new FileChecker(),
+                        gameName,
+                        fileChecker,
                         data.archiveSize(),
                         data.archiveSha1(),
                         finalTotalFilesSize,

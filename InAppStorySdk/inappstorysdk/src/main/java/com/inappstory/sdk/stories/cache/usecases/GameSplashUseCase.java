@@ -10,31 +10,31 @@ import com.inappstory.sdk.lrudiskcache.FileCheckerSuccess;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IDownloadResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 
 public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
-    private final FileChecker fileChecker = new FileChecker();
+    private final FileChecker fileChecker;
     private final IDownloadResource splashScreen;
 
     public GameSplashUseCase(
             IASCore core,
+            FileChecker fileChecker,
             IDownloadResource splashScreen
     ) {
         super(core);
+        this.fileChecker = fileChecker;
         this.splashScreen = splashScreen;
         this.uniqueKey = StringsUtils.md5(splashScreen.url());
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "games" +
-                File.separator +
-                "splashes" +
-                File.separator +
+        this.filePath = new FilePathCacheGenerator(
                 uniqueKey +
-                StringsUtils.getExtensionFromUrl(splashScreen.url());
+                        StringsUtils.getExtensionFromUrl(splashScreen.url()),
+                core,
+                FilePathCacheType.GAME_SPLASH
+        ).generate();
     }
 
     @WorkerThread

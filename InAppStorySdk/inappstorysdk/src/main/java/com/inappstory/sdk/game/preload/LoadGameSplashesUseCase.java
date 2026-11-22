@@ -6,6 +6,7 @@ import com.inappstory.sdk.game.cache.GetLocalSplashUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.utils.GameConstants;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.parse.from.FromGameSplashAnimation;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
@@ -21,13 +22,16 @@ public class LoadGameSplashesUseCase {
     private final List<IGameCenterData> gamesData;
     private final DownloadInterruption interruption;
     private final IASCore core;
+    private final FileChecker fileChecker;
 
     public LoadGameSplashesUseCase(
             IASCore core,
+            FileChecker fileChecker,
             List<IGameCenterData> gamesData,
             DownloadInterruption interruption
     ) {
         this.gamesData = gamesData;
+        this.fileChecker = fileChecker;
         this.core = core;
         this.interruption = interruption;
     }
@@ -90,6 +94,7 @@ public class LoadGameSplashesUseCase {
             File staticFile = localSplashFiles.get(GameConstants.SPLASH_STATIC);
             DownloadSplashUseCase downloadStaticSplashUseCase = new DownloadSplashUseCase(
                     core,
+                    fileChecker,
                     gameData.splashScreen(),
                     staticFile != null ? staticFile.getAbsolutePath() : null,
                     GameConstants.SPLASH_STATIC_KV,
@@ -99,6 +104,7 @@ public class LoadGameSplashesUseCase {
             File animFile = localSplashFiles.get(GameConstants.SPLASH_ANIM);
             final DownloadSplashUseCase downloadAnimSplashUseCase = new DownloadSplashUseCase(
                     core,
+                    fileChecker,
                     gameData.splashAnimation(),
                     animFile != null ? animFile.getAbsolutePath() : null,
                     GameConstants.SPLASH_ANIM_KV,

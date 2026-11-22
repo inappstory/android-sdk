@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
+import com.inappstory.sdk.game.cache.GameNameHolder;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
@@ -13,13 +14,18 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -34,43 +40,96 @@ import static org.mockito.Mockito.*;
 
 public class ArchiveUseCaseTest {
 
-    @Mock private IASCore core;
-    @Mock private ILruCachesHolder cachesHolder;
-    @Mock private LruDiskCache infiniteCache;
-    @Mock private FileChecker fileChecker;
-    @Mock private ProgressCallback progressCallback;
-    @Mock private DownloadInterruption interruption;
-    @Mock private UseCaseCallback<File> useCaseCallback;
-    @Mock private com.inappstory.sdk.stories.cache.FilesDownloader filesDownloader;
-    @Mock private IASStatistic statisticAPI;
-    @Mock private IASStatisticProfiling profilingAPI;
-    @Mock private File cacheDir;
+    @Mock
+    private IASCore core;
+    @Mock
+    private ILruCachesHolder cachesHolder;
+    @Mock
+    private LruDiskCache infiniteCache;
+    @Mock
+    private FileChecker fileChecker;
+    @Mock
+    private ProgressCallback progressCallback;
+    @Mock
+    private DownloadInterruption interruption;
+    @Mock
+    private UseCaseCallback<File> useCaseCallback;
+    @Mock
+    private FilesDownloader filesDownloader;
+    @Mock
+    private IASStatistic statisticAPI;
+    @Mock
+    private IASStatisticProfiling profilingAPI;
+    @Mock
+    private File cacheDir;
+    private String gameName;
+    private String generatedFilePath;
 
-    @TempDir File tempDir;
+    @TempDir
+    File tempDir;
 
     private static final String TEST_URL = "https://example.com/game_v2.zip";
     private static final String MOCK_MD5 = "mocked_md5_hash";
     private static final String MOCK_EXT = ".zip";
 
     private MockedStatic<StringsUtils> stringsUtilsMock;
+    private MockedConstruction<FilePathCacheGenerator> filePathGeneratorMock;
 
     @BeforeEach
     void setUp() {
+
         MockitoAnnotations.openMocks(this);
 
+        this.gameName = new GameNameHolder().getGameName(TEST_URL);
+
         stringsUtilsMock = Mockito.mockStatic(StringsUtils.class);
-        stringsUtilsMock.when(() -> StringsUtils.md5(anyString())).thenReturn(MOCK_MD5);
-        stringsUtilsMock.when(() -> StringsUtils.getExtensionFromUrl(anyString())).thenReturn(MOCK_EXT);
+        stringsUtilsMock.when(new MockedStatic.Verification() {
+            @Override
+            public void apply() throws Throwable {
+                StringsUtils.md5(anyString());
+            }
+        }).thenReturn(MOCK_MD5);
+
+        stringsUtilsMock.when(new MockedStatic.Verification() {
+            @Override
+            public void apply() throws Throwable {
+                StringsUtils.getExtensionFromUrl(anyString());
+            }
+        }).thenReturn(MOCK_EXT);
 
         when(core.cachesHolder()).thenReturn(cachesHolder);
         when(cachesHolder.getInfiniteCache()).thenReturn(infiniteCache);
-        when(infiniteCache.getCacheDir()).thenReturn(cacheDir);
+
+        cacheDir = mock(File.class);
         when(cacheDir.getAbsolutePath()).thenReturn(tempDir.getAbsolutePath());
         when(cacheDir.getFreeSpace()).thenReturn(1024L * 1024L * 1024L);
+        when(infiniteCache.getCacheDir()).thenReturn(cacheDir);
+
+        String validPrefix = cacheDir.getAbsolutePath() + File.separator + "v2" + File.separator + "zip" + File.separator;
+
+        filePathGeneratorMock = Mockito.mockConstruction(FilePathCacheGenerator.class,
+                new MockedConstruction.MockInitializer<FilePathCacheGenerator>() {
+                    @Override
+                    public void prepare(FilePathCacheGenerator mock, MockedConstruction.Context context) throws Throwable {
+                        generatedFilePath = validPrefix + "mock_archive_path.zip";
+                        when(mock.generate()).thenReturn(generatedFilePath);
+                    }
+                }
+        );
 
         when(core.statistic()).thenReturn(statisticAPI);
         when(statisticAPI.profiling()).thenReturn(profilingAPI);
         when(core.filesDownloader()).thenReturn(filesDownloader);
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (stringsUtilsMock != null) {
+            stringsUtilsMock.close();
+        }
+        if (filePathGeneratorMock != null) {
+            filePathGeneratorMock.close();
+        }
     }
 
     @Test
@@ -78,8 +137,11 @@ public class ArchiveUseCaseTest {
         ArchiveUseCase useCase = new ArchiveUseCase(
                 core,
                 TEST_URL,
-                fileChecker, 1000L,
-                "sha1", 500L,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                500L,
                 progressCallback,
                 interruption,
                 useCaseCallback,
@@ -100,14 +162,23 @@ public class ArchiveUseCaseTest {
     void testGetFile_UsesValidLocalArchive() {
         File mockCachedFile = new File(tempDir, "cached.zip");
         when(infiniteCache.getFullFile(MOCK_MD5, "Archive")).thenReturn(mockCachedFile);
-        
+
         FileCheckerResult successResult = mock(FileCheckerResult.class);
         when(fileChecker.checkWithShaAndSize(eq(mockCachedFile), eq(1000L), eq("sha1"), eq(true)))
                 .thenReturn(successResult);
 
         ArchiveUseCase useCase = new ArchiveUseCase(
-                core, TEST_URL, fileChecker, 1000L, "sha1", 500L,
-                progressCallback, interruption, useCaseCallback, true
+                core,
+                TEST_URL,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                500L,
+                progressCallback,
+                interruption,
+                useCaseCallback,
+                true
         );
 
         useCase.getFile();
@@ -124,8 +195,17 @@ public class ArchiveUseCaseTest {
                 .thenReturn(new FileCheckerError("Invalid size"));
 
         ArchiveUseCase useCase = new ArchiveUseCase(
-                core, TEST_URL, fileChecker, 1000L, "sha1", 500L,
-                progressCallback, interruption, useCaseCallback, true
+                core,
+                TEST_URL,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                500L,
+                progressCallback,
+                interruption,
+                useCaseCallback,
+                true
         );
 
         useCase.getFile();
@@ -136,18 +216,27 @@ public class ArchiveUseCaseTest {
 
     @Test
     void testDownloadArchive_FailsOnInsufficientSpace() {
-        when(cacheDir.getFreeSpace()).thenReturn(100L);
+        doReturn(100L).when(cacheDir).getFreeSpace();
 
         ArchiveUseCase useCase = new ArchiveUseCase(
-                core, TEST_URL, fileChecker, 1000L, "sha1", 5000L,
-                progressCallback, interruption, useCaseCallback, false
+                core,
+                TEST_URL,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                5000L,
+                progressCallback,
+                interruption,
+                useCaseCallback,
+                false
         );
 
         useCase.getFile();
 
-        verify(useCaseCallback).onError(argThat(error -> 
-                error instanceof SimpleUseCaseError && 
-                error.message().contains("No free space")
+        verify(useCaseCallback).onError(argThat(error ->
+                error instanceof SimpleUseCaseError &&
+                        error.message().contains("No free space")
         ));
         verify(filesDownloader, never()).downloadFile(any(), any(), any(), any(), any(), anyLong(), any());
     }
@@ -155,8 +244,17 @@ public class ArchiveUseCaseTest {
     @Test
     void testFinishCallback_HandlesFullDownloadSuccess() throws Exception {
         ArchiveUseCase useCase = new ArchiveUseCase(
-                core, TEST_URL, fileChecker, 1000L, "sha1", 500L,
-                progressCallback, interruption, useCaseCallback, false
+                core,
+                TEST_URL,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                500L,
+                progressCallback,
+                interruption,
+                useCaseCallback,
+                false
         );
 
         useCase.getFile();
@@ -165,8 +263,9 @@ public class ArchiveUseCaseTest {
         verify(filesDownloader).downloadFile(any(), any(), any(), any(), any(), anyLong(), callbackCaptor.capture());
 
         File downloadedFile = new File(tempDir, "downloaded.zip");
+        downloadedFile.createNewFile();
         DownloadFileState state = new DownloadFileState(downloadedFile, 1000L, 1000L);
-        
+
         when(fileChecker.checkWithShaAndSize(eq(downloadedFile), eq(1000L), eq("sha1"), eq(true)))
                 .thenReturn(mock(FileCheckerResult.class));
 
@@ -180,8 +279,17 @@ public class ArchiveUseCaseTest {
     @Test
     void testFinishCallback_HandlesFullDownloadWithCheckerError() throws Exception {
         ArchiveUseCase useCase = new ArchiveUseCase(
-                core, TEST_URL, fileChecker, 1000L, "sha1", 500L,
-                progressCallback, interruption, useCaseCallback, false
+                core,
+                TEST_URL,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                500L,
+                progressCallback,
+                interruption,
+                useCaseCallback,
+                false
         );
 
         useCase.getFile();
@@ -190,16 +298,17 @@ public class ArchiveUseCaseTest {
         verify(filesDownloader).downloadFile(any(), any(), any(), any(), any(), anyLong(), callbackCaptor.capture());
 
         File downloadedFile = new File(tempDir, "downloaded.zip");
+        downloadedFile.createNewFile();
         DownloadFileState state = new DownloadFileState(downloadedFile, 1000L, 1000L);
-        
+
         when(fileChecker.checkWithShaAndSize(eq(downloadedFile), eq(1000L), eq("sha1"), eq(true)))
                 .thenReturn(new FileCheckerError("SHA mismatch"));
 
         callbackCaptor.getValue().finish(state);
 
-        verify(useCaseCallback).onError(argThat(error -> 
-                error instanceof SimpleUseCaseError && 
-                error.message().contains("sha or size is incorrect")
+        verify(useCaseCallback).onError(argThat(error ->
+                error instanceof SimpleUseCaseError &&
+                        error.message().contains("sha or size is incorrect")
         ));
         verify(infiniteCache).put(any(), eq("Archive"));
     }
@@ -207,8 +316,17 @@ public class ArchiveUseCaseTest {
     @Test
     void testFinishCallback_HandlesInterruptedDownload() throws Exception {
         ArchiveUseCase useCase = new ArchiveUseCase(
-                core, TEST_URL, fileChecker, 1000L, "sha1", 500L,
-                progressCallback, interruption, useCaseCallback, false
+                core,
+                TEST_URL,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                500L,
+                progressCallback,
+                interruption,
+                useCaseCallback,
+                false
         );
 
         useCase.getFile();
@@ -218,9 +336,9 @@ public class ArchiveUseCaseTest {
 
         callbackCaptor.getValue().finish(null);
 
-        verify(useCaseCallback).onError(argThat(error -> 
-                error instanceof SimpleUseCaseError && 
-                error.message().contains("interrupted")
+        verify(useCaseCallback).onError(argThat(error ->
+                error instanceof SimpleUseCaseError &&
+                        error.message().contains("interrupted")
         ));
         verify(infiniteCache, never()).put(any(), any());
     }
@@ -228,8 +346,17 @@ public class ArchiveUseCaseTest {
     @Test
     void testProgressCallback_DelegatesToUserCallback() {
         ArchiveUseCase useCase = new ArchiveUseCase(
-                core, TEST_URL, fileChecker, 1000L, "sha1", 500L,
-                progressCallback, interruption, useCaseCallback, false
+                core,
+                TEST_URL,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                500L,
+                progressCallback,
+                interruption,
+                useCaseCallback,
+                false
         );
 
         useCase.getFile();
@@ -245,8 +372,17 @@ public class ArchiveUseCaseTest {
     @Test
     void testProgressCallback_HandlesDownloadError() {
         ArchiveUseCase useCase = new ArchiveUseCase(
-                core, TEST_URL, fileChecker, 1000L, "sha1", 500L,
-                progressCallback, interruption, useCaseCallback, false
+                core,
+                TEST_URL,
+                gameName,
+                fileChecker,
+                1000L,
+                "sha1",
+                500L,
+                progressCallback,
+                interruption,
+                useCaseCallback,
+                false
         );
 
         useCase.getFile();
@@ -256,9 +392,9 @@ public class ArchiveUseCaseTest {
 
         progressCaptor.getValue().onError("Network timeout");
 
-        verify(useCaseCallback).onError(argThat(error -> 
-                error instanceof SimpleUseCaseError && 
-                error.message().equals("Network timeout")
+        verify(useCaseCallback).onError(argThat(error ->
+                error instanceof SimpleUseCaseError &&
+                        error.message().equals("Network timeout")
         ));
     }
 }

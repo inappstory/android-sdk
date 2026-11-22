@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.preload;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 
@@ -27,6 +28,7 @@ public class GamePreloader implements IGamePreloader {
 
     LoadGameSplashesUseCase splashesUseCase;
     LoadGameFilesUseCase gameFilesUseCase;
+    FileChecker fileChecker = new FileChecker();
 
     Map<String, IGameCenterData> loadedData = null;
 
@@ -64,6 +66,7 @@ public class GamePreloader implements IGamePreloader {
             interruption = new DownloadInterruption();
             splashesUseCase = new LoadGameSplashesUseCase(
                     core,
+                    fileChecker,
                     new ArrayList<>(loadedData.values()),
                     interruption
             );
@@ -82,6 +85,7 @@ public class GamePreloader implements IGamePreloader {
                         synchronized (useCaseCreateLock) {
                             gameFilesUseCase = new LoadGameFilesUseCase(
                                     core,
+                                    fileChecker,
                                     new ArrayList<>(loadedData.values()),
                                     interruption
                             );

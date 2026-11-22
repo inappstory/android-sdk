@@ -19,15 +19,18 @@ public class DownloadSplashUseCase {
     private final String gameId;
     private final String keyValueStorageKey;
     private final IASCore core;
+    private final FileChecker fileChecker;
 
     public DownloadSplashUseCase(
             IASCore core,
+            FileChecker fileChecker,
             IDownloadResource resource,
             String oldSplashPath,
             String keyValueStorageKey,
             String gameId
     ) {
         this.resource = resource;
+        this.fileChecker = fileChecker;
         this.core = core;
         this.oldSplashPath = oldSplashPath;
         this.gameId = gameId;
@@ -38,7 +41,6 @@ public class DownloadSplashUseCase {
     public void download(
             final UseCaseCallback<File> splashScreenCallback
     ) {
-        final FileChecker fileChecker = new FileChecker();
         File oldSplash = null;
         if (oldSplashPath != null) {
             oldSplash = new File(oldSplashPath);
@@ -66,7 +68,7 @@ public class DownloadSplashUseCase {
             return;
         }
         GameSplashUseCase gameSplashUseCase =
-                new GameSplashUseCase(core, resource);
+                new GameSplashUseCase(core, fileChecker, resource);
         DownloadFileState fileState = gameSplashUseCase.getFile();
         if (fileState != null) {
             if (fileState.file.exists()) {

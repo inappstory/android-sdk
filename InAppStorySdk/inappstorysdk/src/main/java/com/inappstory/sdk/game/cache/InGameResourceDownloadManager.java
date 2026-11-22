@@ -1,9 +1,14 @@
 package com.inappstory.sdk.game.cache;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.usecases.InGameResourceUseCase;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
+import com.inappstory.sdk.utils.StringsUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,9 +24,11 @@ public class InGameResourceDownloadManager {
     private final IASCore core;
     private final Set<String> launchedUrls = new HashSet<>();
     private final ExecutorService downloadExecutor = Executors.newSingleThreadExecutor();
+    private final FileChecker fileChecker;
 
-    public InGameResourceDownloadManager(IASCore core) {
+    public InGameResourceDownloadManager(IASCore core, FileChecker fileChecker) {
         this.core = core;
+        this.fileChecker = fileChecker;
     }
 
     private class InGameResourceCallbacks {
@@ -29,7 +36,8 @@ public class InGameResourceDownloadManager {
     }
 
     public void addNewTask(
-            String zipUrl,
+            String zipUrlHash,
+            String gameName,
             String gameInstanceId,
             final WebResource webResource,
             InGameResourceDownloadCallback callback
@@ -46,12 +54,20 @@ public class InGameResourceDownloadManager {
             if (launchedUrls.contains(key)) return;
             launchedUrls.add(key);
         }
+        String symlinkDir = new FilePathCacheGenerator(
+                zipUrlHash,
+                gameInstanceId,
+                core,
+                FilePathCacheType.GAME_RESOURCE
+        ).generateSymlink(gameName);
+
         downloadExecutor.submit(new Runnable() {
             @Override
             public void run() {
                 new InGameResourceUseCase(
                         core,
-                        zipUrl,
+                        fileChecker,
+                        symlinkDir,
                         gameInstanceId,
                         new UseCaseCallback<Void>() {
                             @Override

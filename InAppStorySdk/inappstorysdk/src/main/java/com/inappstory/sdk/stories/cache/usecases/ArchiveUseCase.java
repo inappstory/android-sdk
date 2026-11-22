@@ -18,6 +18,8 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -40,6 +42,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     public ArchiveUseCase(
             IASCore core,
             String url,
+            String gameName,
             FileChecker fileChecker,
             long archiveSize,
             String archiveSha1,
@@ -54,27 +57,20 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
         this.url = url;
         this.totalFilesSize = totalFilesSize;
         this.uniqueKey = StringsUtils.md5(url);
-        this.archiveName = getArchiveName(url);
+        this.archiveName = gameName;
         this.archiveSize = archiveSize;
         this.archiveSha1 = archiveSha1;
         this.progressCallback = progressCallback;
         this.interruption = interruption;
         this.useCaseCallback = useCaseCallback;
         this.useLocalFile = useLocalFile;
-        File cacheDir = getCache().getCacheDir();
         String fileName = this.uniqueKey + StringsUtils.getExtensionFromUrl(url);
-        String subPath = "v2" +
-                File.separator +
-                "zip" +
-                File.separator +
-                this.archiveName +
-                File.separator +
-                fileName;
-        this.filePath = new File(cacheDir, subPath).getAbsolutePath();
-    }
-
-    private String getArchiveName(String url) {
-        return new GameNameHolder().getGameName(url);
+        this.filePath = new FilePathCacheGenerator(
+                gameName,
+                fileName,
+                core,
+                FilePathCacheType.ARCHIVE
+        ).generate();
     }
 
     @Override

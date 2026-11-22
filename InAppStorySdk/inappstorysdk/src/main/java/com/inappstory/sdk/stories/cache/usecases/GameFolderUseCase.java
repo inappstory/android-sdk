@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.GameNameHolder;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
@@ -11,6 +13,8 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameArchiveItem;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -26,59 +30,112 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
     private final UseCaseCallback<String> useCaseCallback;
     private final ProgressCallback progressCallback;
     private final String type = "Folder";
-    private final FileChecker fileChecker = new FileChecker();
+    private final FileChecker fileChecker;
 
     public GameFolderUseCase(
             IASCore core,
             String url,
+            String gameName,
+            FileChecker fileChecker,
             List<GameArchiveItem> expectedArchiveItems,
             UseCaseCallback<String> useCaseCallback,
             ProgressCallback progressCallback
     ) {
         super(core);
         this.url = url;
+        this.fileChecker = fileChecker;
         this.useCaseCallback = useCaseCallback;
         this.progressCallback = progressCallback;
         this.expectedArchiveItems = expectedArchiveItems;
-        this.archiveName = getArchiveName(url);
+        this.archiveName = gameName;
         this.uniqueKey = StringsUtils.md5(url);
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "zip" +
-                File.separator +
-                archiveName +
-                File.separator +
-                uniqueKey;
 
+        this.filePath = new FilePathCacheGenerator(
+                gameName,
+                this.uniqueKey,
+                core,
+                FilePathCacheType.GAME_FOLDER
+        ).generate();
     }
 
-    private String getArchiveName(String url) {
-
-        return new GameNameHolder().getGameName(url);
+    @Override
+    public Void getFile() {
+        if (!checkIfAlreadyUnzipped())
+            tryUnzipAndValidate();
+        return null;
     }
+
+    private boolean checkIfAlreadyUnzipped() {
+        DownloadFileState fileState = getCache().get(uniqueKey, type);
+        if (fileState != null) {
+            return checkDirectory(fileState.file);
+        } else {
+            File directory = new File(this.filePath);
+            if (checkDirectory(directory)) {
+                putToCache(getFileSize(directory));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void tryUnzipAndValidate() {
+        String zipFilePath = this.filePath +
+                StringsUtils.getExtensionFromUrl(url);
+        File zipFile = new File(zipFilePath);
+        if (!zipFile.exists()) {
+            useCaseCallback.onError(new SimpleUseCaseError("Can't find archive"));
+            return;
+        }
+        final UnzipUseCase unzipUseCase =
+                new UnzipUseCase(zipFile.getAbsolutePath());
+        boolean unzipResult = unzipUseCase.unzip(
+                this.filePath,
+                progressCallback
+        );
+        if (!unzipResult) {
+            useCaseCallback.onError(new SimpleUseCaseError("Failed to unarchive game"));
+        } else {
+            File directory = new File(this.filePath);
+            String checkRes = checkForExpectedItems(directory);
+            if (checkRes == null) {
+                progressCallback.onProgress(100, 100);
+                putToCache(getFileSize(directory));
+                useCaseCallback.onSuccess(this.filePath);
+            } else {
+                useCaseCallback.onError(new SimpleUseCaseError("Archive has wrong file structure. " + checkRes));
+            }
+        }
+    }
+
 
     private boolean checkDirectory(File directory) {
-        if (directory.exists() && checkForExpectedItems(directory) == null) {
-            progressCallback.onProgress(100, 100);
-            useCaseCallback.onSuccess(directory.getAbsolutePath());
-            return true;
+        if (directory != null && directory.exists() && directory.isDirectory()) {
+            if (checkForExpectedItems(directory) == null) {
+                progressCallback.onProgress(100, 100);
+                useCaseCallback.onSuccess(directory.getAbsolutePath());
+                return true;
+            }
         }
         return false;
     }
 
     private String checkForExpectedItems(File directory) {
         for (GameArchiveItem item : expectedArchiveItems) {
-            if (item.sha1() == null) continue;
-            File checkedFile = new File(directory + File.separator + item.item());
-            if (checkedFile.exists()) {
-                String sha1 = fileChecker.getFileSHA1(checkedFile);
-                if (!Objects.equals(fileChecker.getFileSHA1(checkedFile), item.sha1())) {
-                    return "File " + item.item() + " has sha1: " + sha1 + ". Expected sha1: " + item.sha1();
-                }
-            } else {
-                return "File " + item.item() + " does not in archive";
+            if (item.sha1() == null)
+                continue;
+            File checkedFile = new File(directory, item.item());
+            if (!checkedFile.exists()) {
+                return "File " + item.item() + " is missing from archive";
+            }
+            String sha1 = fileChecker.getFileSHA1(checkedFile);
+            if (!Objects.equals(sha1, item.sha1())) {
+                return "File "
+                        + item.item()
+                        + " has sha1: "
+                        + sha1
+                        + ". Expected sha1: "
+                        + item.sha1();
             }
         }
         return null;
@@ -86,69 +143,22 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
 
     private void putToCache(long size) {
         try {
-            CacheJournalItem cacheJournalItem = generateCacheItem(
-                    size, size
-            );
+            CacheJournalItem cacheJournalItem = generateCacheItem(size, size);
             getCache().put(cacheJournalItem, type);
         } catch (Exception e) {
-
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_WARN_TAG,
+                    "Failed to update cache journal for game folder. Error: " + e.getMessage()
+            );
         }
     }
 
-    @Override
-    public Void getFile() {
-        DownloadFileState fileState = getCache().get(uniqueKey, type);
-        if (fileState != null) {
-            if (checkDirectory(fileState.file)) return null;
-        } else {
-            File directory = new File(this.filePath);
-            if (checkDirectory(directory)) {
-                putToCache(getFileSize(directory));
-                return null;
-            }
-        }
-        String zipFilePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "zip" +
-                File.separator +
-                archiveName +
-                File.separator +
-                uniqueKey +
-                StringsUtils.getExtensionFromUrl(url);
-        File zipFile = new File(zipFilePath);
-        if (!zipFile.exists()) {
-            useCaseCallback.onError(new SimpleUseCaseError("Can't find archive"));
-        }
-        final UnzipUseCase unzipUseCase =
-                new UnzipUseCase(zipFilePath);
-        boolean unzipResult = unzipUseCase.unzip(
-                filePath,
-                progressCallback
-        );
-        if (!unzipResult) {
-            useCaseCallback.onError(new SimpleUseCaseError("Can't unarchive game"));
-        } else {
-            File directory = new File(this.filePath);
-            String checkRes = checkForExpectedItems(directory);
-            if (checkRes == null) {
-                progressCallback.onProgress(100, 100);
-                putToCache(getFileSize(directory));
-                useCaseCallback.onSuccess(filePath);
-            } else {
-                useCaseCallback.onError(new SimpleUseCaseError("Archive has wrong files structure. " + checkRes));
-            }
-        }
-        return null;
-    }
 
 
     private long getFileSize(final File file) {
-        if (file == null || !file.exists())
-            return 0;
-        if (!file.isDirectory())
-            return file.length();
+        if (file == null || !file.exists() || !file.isDirectory()) {
+            return file != null ? file.length() : 0;
+        }
         final List<File> dirs = new LinkedList<>();
         dirs.add(file);
         long result = 0;

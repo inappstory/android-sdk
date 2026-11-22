@@ -16,6 +16,8 @@ import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -28,19 +30,17 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
     private final ProgressCallback progressCallback;
     private final DownloadInterruption interruption;
     private final UseCaseCallback<Void> useCaseCallback;
-    private final FileChecker fileChecker = new FileChecker();
+    private final FileChecker fileChecker;
 
-    private String getArchiveName(String url) {
 
-        return new GameNameHolder().getGameName(url);
-    }
 
-    private List<String> symlinkKeys = new ArrayList<>();
+    private final List<String> symlinkKeys = new ArrayList<>();
     private String symlinkDir = null;
 
     public GameResourceUseCase(
             IASCore core,
-            String zipUrl,
+            FileChecker fileChecker,
+            String symlinkDir,
             String gameInstanceId,
             ProgressCallback progressCallback,
             DownloadInterruption interruption,
@@ -50,31 +50,18 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         super(core);
         if (resources == null || resources.isEmpty()) throw new RuntimeException("");
         WebResource resource = resources.get(0);
+        this.fileChecker = fileChecker;
         this.useCaseCallback = useCaseCallback;
         this.interruption = interruption;
         this.progressCallback = progressCallback;
         this.uniqueKey = StringsUtils.md5(gameInstanceId + "_" + resource.url);
         this.resource = resource;
-        String realPath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator + "gameResources" +
-                File.separator +
-                StringsUtils.md5(resource.url);
-
-        symlinkDir = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "zip" +
-                File.separator +
-                getArchiveName(zipUrl) +
-                File.separator +
-                StringsUtils.md5(zipUrl) +
-                File.separator +
-                "resources_" +
-                gameInstanceId +
-                File.separator;
+        String realPath = new FilePathCacheGenerator(
+                resource.url,
+                core,
+                FilePathCacheType.GAME_RESOURCE
+        ).generate();
+        this.symlinkDir = symlinkDir;
         for (WebResource webResource : resources) {
             symlinkKeys.add(symlinkDir + webResource.key);
         }

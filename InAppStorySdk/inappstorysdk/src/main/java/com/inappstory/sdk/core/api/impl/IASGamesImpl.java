@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.game.cache.InGameResourceDownloadManager;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 
 public class IASGamesImpl implements IASGames {
@@ -23,7 +24,10 @@ public class IASGamesImpl implements IASGames {
 
     public IASGamesImpl(IASCore core) {
         this.core = core;
-        this.inGameResourceDownloadManager = new InGameResourceDownloadManager(core);
+        this.inGameResourceDownloadManager = new InGameResourceDownloadManager(
+                core,
+                new FileChecker()
+        );
     }
 
     @Override

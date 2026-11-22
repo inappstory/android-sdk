@@ -3,10 +3,14 @@ package com.inappstory.sdk.game.cache;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.usecases.GameResourceUseCase;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.ProgressCallback;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,27 +30,33 @@ public class DownloadResourcesUseCase {
     private final Object loadProgressLock = new Object();
     private final Object filesLock = new Object();
     private final String gameInstanceId;
-    private final String zipUrl;
+    private final String zipUrlHash;
+    private final String gameName;
     private final DownloadInterruption interruption;
     private final ProgressCallback progressCallback;
     private final UseCaseCallback<Void> useCaseCallback;
+    private final FileChecker fileChecker;
 
     public DownloadResourcesUseCase(
             IASCore core,
+            FileChecker fileChecker,
             List<WebResource> resources,
             String gameInstanceId,
             String zipUrl,
+            String gameName,
             DownloadInterruption interruption,
             ProgressCallback progressCallback,
             UseCaseCallback<Void> useCaseCallback
     ) {
         this.resources = resources;
         this.core = core;
+        this.fileChecker = fileChecker;
         this.progressCallback = progressCallback;
         this.useCaseCallback = useCaseCallback;
         this.gameInstanceId = gameInstanceId;
         this.interruption = interruption;
-        this.zipUrl = zipUrl;
+        this.zipUrlHash = StringsUtils.md5(zipUrl);
+        this.gameName = gameName;
         if (resources == null) return;
         totalResourcesSize = 0;
         totalLoadedResourcesSize = 0;
@@ -82,6 +92,13 @@ public class DownloadResourcesUseCase {
             }
             groupedResourcesMap.get(resource.url).add(resource);
         }
+        String symlinkDir = new FilePathCacheGenerator(
+                zipUrlHash,
+                gameInstanceId,
+                core,
+                FilePathCacheType.GAME_RESOURCE
+        ).generateSymlink(gameName);
+
         for (final List<WebResource> groupedResources : groupedResourcesMap.values()) {
             futures.add(loadResourcesThreads.submit(new Runnable() {
                 @Override
@@ -89,7 +106,8 @@ public class DownloadResourcesUseCase {
                     final long[] lastLoadedSize = new long[1];
                     new GameResourceUseCase(
                             core,
-                            zipUrl,
+                            fileChecker,
+                            symlinkDir,
                             gameInstanceId,
                             new ProgressCallback() {
                                 @Override
@@ -148,46 +166,5 @@ public class DownloadResourcesUseCase {
     @WorkerThread
     public void download() {
         downloadParallel();
-    }
-
-    @WorkerThread
-    private void downloadSync() {
-     /**  final long[] cnt = new long[1];
-       terminate = false;
-       for (WebResource resource : resources) {
-            if (terminate) {
-                return;
-            }
-            new GameResourceUseCase(
-                    core,
-                    zipUrl,
-                    gameInstanceId,
-                    new ProgressCallback() {
-                        @Override
-                        public void onProgress(long loadedSize, long totalSize) {
-                            progressCallback.onProgress(
-                                    cnt[0] + loadedSize,
-                                    totalResourcesSize
-                            );
-                        }
-                    },
-                    interruption,
-                    new UseCaseCallback<Void>() {
-                        @Override
-                        public void onError(UseCaseError error) {
-                            useCaseCallback.onError(error);
-                            terminate = true;
-                        }
-
-                        @Override
-                        public void onSuccess(Void result) {
-
-                        }
-                    },
-                    resource
-            ).getFile();
-            cnt[0] = cnt[0] + resource.size;
-        }
-        useCaseCallback.onSuccess(null); */
     }
 }

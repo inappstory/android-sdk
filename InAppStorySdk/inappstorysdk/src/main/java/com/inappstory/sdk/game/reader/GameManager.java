@@ -19,6 +19,7 @@ import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.inputdialog.IInputDialogActions;
 import com.inappstory.sdk.core.inputdialog.InputDialogSource;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
+import com.inappstory.sdk.game.cache.GameNameHolder;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
@@ -65,6 +66,7 @@ public class GameManager {
     List<WebResource> resources;
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
+    GameNameHolder gameNameHolder = new GameNameHolder();
     AbstractGameLogger logger;
     private final ContentData dataModel;
 
@@ -469,7 +471,9 @@ public class GameManager {
         GameAddToCachePayload atcPayload = new ToGameAddToCachePayload(payload).parse();
         if (atcPayload == null) return;
         core.gamesAPI().inGameResourceDownloadManager().addNewTask(
-                path,
+
+                StringsUtils.md5(path),
+                gameNameHolder.getGameName(path),
                 gameCenterId,
                 atcPayload.webResource,
                 result -> host.addToCacheComplete(atcPayload.cb, atcPayload.id, result)
