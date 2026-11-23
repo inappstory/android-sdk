@@ -137,7 +137,7 @@ public class InAppMessagesUseCase {
                     }
 
                     @Override
-                    protected void error() {
+                    public void error() {
                         loadCallback.error();
                     }
                 }

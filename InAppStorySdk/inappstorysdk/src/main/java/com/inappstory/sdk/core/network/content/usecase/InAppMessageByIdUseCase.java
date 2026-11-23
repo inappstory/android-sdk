@@ -107,7 +107,7 @@ public class InAppMessageByIdUseCase {
                     }
 
                     @Override
-                    protected void error() {
+                    public void error() {
                         callback.error();
                     }
                 }

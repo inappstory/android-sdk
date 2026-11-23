@@ -540,7 +540,7 @@ class StoryDownloader {
                     }
 
                     @Override
-                    protected void error() {
+                    public void error() {
                         generateCommonLoadListError(feed);
                         callback.onError("");
                     }

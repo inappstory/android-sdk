@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.network.content.models.LayoutResponse;
@@ -49,7 +51,10 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
         try {
             getCache().delete(uniqueKey);
         } catch (Exception e) {
-
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_WARN_TAG,
+                    "Failed to delete layout cache key. Error: " + e.getMessage()
+            );
         }
     }
 
@@ -62,17 +67,32 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
                     public void success() {
                         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
                         CachedSessionData sessionData = settingsHolder.sessionData();
+                        if (sessionData == null || sessionData.userId == null) {
+                            InAppStoryManager.showDLog(
+                                    LoggerTags.IAS_WARN_TAG,
+                                    "Can't download layout. Session is not opened");
+                            useCaseCallback.onError(new SimpleUseCaseError("Session is not opened"));
+                            return;
+                        }
                         NetworkCallback<LayoutResponse> layoutCallback =
                                 new NetworkCallback<LayoutResponse>() {
                                     @Override
                                     public void onSuccess(LayoutResponse response) {
-                                        writeToFile(response.layout);
-                                        useCaseCallback.onSuccess(response.layout);
+                                        if (response != null && response.layout != null) {
+                                            if (writeToFile(response.layout)) {
+                                                useCaseCallback.onSuccess(response.layout);
+                                            } else {
+                                                useCaseCallback.onError(new SimpleUseCaseError("Failed to save layout to disk"));
+                                            }
+                                        } else {
+                                            useCaseCallback.onError(new SimpleUseCaseError("Empty layout response"));
+                                        }
                                     }
 
                                     @Override
                                     public void errorDefault(String message) {
-                                        useCaseCallback.onError(new SimpleUseCaseError(""));
+                                        String errorMessage = (message != null && !message.isEmpty()) ? message : "Network error";
+                                        useCaseCallback.onError(new SimpleUseCaseError(errorMessage));
                                     }
                                 };
                         core.network().enqueue(
@@ -84,6 +104,15 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
                                 layoutCallback,
                                 ToLayoutResponse.class
                         );
+                    }
+
+                    @Override
+                    public void error() {
+                        InAppStoryManager.showDLog(
+                                LoggerTags.IAS_WARN_TAG,
+                                "Can't download layout. No internet connection"
+                        );
+                        useCaseCallback.onError(new SimpleUseCaseError("No internet connection"));
                     }
                 }
         );
@@ -124,28 +153,58 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
         return false;
     }
 
-    private void writeToFile(String layout) {
+    private boolean writeToFile(String layout) {
         File file = new File(filePath);
         try {
-            file.getParentFile().mkdirs();
-            file.createNewFile();
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
+            try (FileOutputStream stream = new FileOutputStream(file)) {
+                stream.write(layout.getBytes());
+                getCache().put(generateCacheItem(layout.length(), layout.length()));
+                return true;
+            }
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try (FileOutputStream stream = new FileOutputStream(filePath)) {
-            stream.write(layout.getBytes());
-            getCache().put(generateCacheItem(layout.length(), layout.length()));
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    "Failed to write layout file. Error: " + e.getMessage()
+            );
+            return false;
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    "Failed to update cache for layout. Error: " + e.getMessage()
+            );
+            return false;
         }
     }
 
     private String readFile(File file) {
-        int length = (int) file.length();
-        byte[] bytes = new byte[length];
-        try (FileInputStream stream = new FileInputStream(filePath)) {
-            stream.read(bytes);
-        } catch (Exception ignored) {
+        long length = file.length();
+        if (length > Integer.MAX_VALUE) {
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_WARN_TAG,
+                    "Layout file is too large to read into memory"
+            );
+            return null;
+        }
+
+        byte[] bytes = new byte[(int) length];
+        try (FileInputStream stream = new FileInputStream(file)) {
+            int bytesRead = stream.read(bytes);
+            if (bytesRead != length) {
+                InAppStoryManager.showDLog(
+                        LoggerTags.IAS_WARN_TAG,
+                        "Could not read entire layout file. Expected: " + length + ", Read: " + bytesRead
+                );
+            }
+        } catch (IOException e) {
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    "Failed to read layout file. Error: " + e.getMessage()
+            );
             return null;
         }
         return new String(bytes);

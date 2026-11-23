@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -39,7 +41,10 @@ public class SessionAssetLocalUseCase extends GetCacheFileUseCase<Void> {
         try {
             getCache().delete(uniqueKey);
         } catch (Exception e) {
-
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_WARN_TAG,
+                    "Failed to delete asset cache key. Error: " + e.getMessage()
+            );
         }
     }
 

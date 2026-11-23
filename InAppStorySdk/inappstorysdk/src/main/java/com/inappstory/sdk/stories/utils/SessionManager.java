@@ -128,7 +128,7 @@ public class SessionManager {
             }
 
             @Override
-            protected void error() {
+            public void error() {
                 if (callback != null)
                     callback.onError();
             }
@@ -443,7 +443,7 @@ public class SessionManager {
                     }
 
                     @Override
-                    protected void error() {
+                    public void error() {
                         super.error();
                         synchronized (openProcessLock) {
                             openProcess = false;

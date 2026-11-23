@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASLayoutHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
@@ -16,7 +17,6 @@ import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.cache.usecases.GenerateSlideTaskUseCase;
 import com.inappstory.sdk.stories.cache.usecases.LoadSlideUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
@@ -305,14 +305,19 @@ public class SlidesDownloader {
                 slidesCountToCache = Math.min(2, readerContent.actualSlidesCount());
             }
             try {
+                SlideTaskCreator taskCreator = new SlideTaskCreator(
+                        (IASDataSettingsHolder) core.settingsAPI(),
+                        core.assetUrlsExtractor(),
+                        readerContent
+                );
                 for (int slideIndex = 0; slideIndex < slidesCountToCache; slideIndex++) {
                     SlideTaskKey slideTaskKey = new SlideTaskKey(contentIdAndType, slideIndex);
                     SlideTask slideTask = slideTasks.get(slideTaskKey);
                     if (slideTask == null || slideTask.loadType == 0) {
                         slideTasks.put(
                                 slideTaskKey,
-                                (new GenerateSlideTaskUseCase(core, readerContent, slideIndex))
-                                        .generate()
+                                taskCreator
+                                        .createForSlideIndex(slideIndex)
                                         .forced(forced)
                         );
                         if (priorityIndexes.contains(slideIndex)) {

@@ -1,36 +1,39 @@
-package com.inappstory.sdk.stories.cache.usecases;
+package com.inappstory.sdk.stories.cache;
 
 import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.cache.SlideTask;
-import com.inappstory.sdk.stories.cache.UrlWithAlter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GenerateSlideTaskUseCase {
-    private final IASCore core;
+public class SlideTaskCreator {
+    private final IASDataSettingsHolder settingsHolder;
+    private final AssetUrlsExtractor urlsExtractor;
     private final IReaderContent readerContent;
-    private final int index;
 
 
-    public GenerateSlideTaskUseCase(IASCore core, IReaderContent readerContent, int index) {
-        this.core = core;
+    public SlideTaskCreator(
+            IASDataSettingsHolder settingsHolder,
+            AssetUrlsExtractor urlsExtractor,
+            IReaderContent readerContent
+    ) {
         this.readerContent = readerContent;
-        this.index = index;
+        this.urlsExtractor = urlsExtractor;
+        this.settingsHolder = settingsHolder;
     }
 
-    public SlideTask generate() {
-        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>(
-                ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults()
-        );
+
+    public SlideTask createForSlideIndex(int index) {
+        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
+                new HashMap<>(settingsHolder.imagePlaceholdersWithSessionDefaults());
         List<UrlWithAlter> urlWithAlters = new ArrayList<>();
         List<String> plNames = readerContent.placeholdersNames(index);
         for (String plName : plNames) {
@@ -60,7 +63,7 @@ public class GenerateSlideTaskUseCase {
                 readerContent.staticResources(index),
                 readerContent.vodResources(index),
                 urlWithAlters,
-                core.assetUrlsExtractor().extract(readerContent)
+                urlsExtractor.extract(readerContent)
         );
     }
 }

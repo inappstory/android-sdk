@@ -3,6 +3,8 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 import android.util.Pair;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -41,7 +43,10 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
         try {
             getCache().delete(uniqueKey);
         } catch (Exception e) {
-
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_WARN_TAG,
+                    "Failed to delete asset cache key. Error: " + e.getMessage()
+            );
         }
     }
 
@@ -50,31 +55,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
         downloadLog.generateResponseLog(false, filePath);
 
         try {
-            FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                @Override
-                public void finish(DownloadFileState fileState) {
-                    downloadLog.sendResponseLog();
-                    if (fileState == null) {
-                        useCaseCallback.onError(new SimpleUseCaseError("Can't download bundle file: " + cacheObject.url));
-                        return;
-                    }
-                    CacheJournalItem cacheJournalItem = generateCacheItem(
-                            fileState.file.length(),
-                            fileState.file.length()
-                    );
-                    try {
-                        getCache().put(cacheJournalItem);
-                    } catch (Exception e) {
-
-                    }
-                    useCaseCallback.onSuccess(new Pair<>(cacheObject, fileState.file));
-                }
-
-                @Override
-                public void waiting() {
-
-                }
-            };
+            FinishDownloadFileCallback callback = createFinishCallback();
             core.filesDownloader()
                     .downloadFile(
                             cacheObject.url,
@@ -87,6 +68,46 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
 
         } catch (Exception e) {
             useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
+        }
+    }
+
+    private FinishDownloadFileCallback createFinishCallback() {
+        return new FinishDownloadFileCallback() {
+            @Override
+            public void finish(DownloadFileState state) {
+                downloadLog.sendResponseLog();
+                if (state == null || !state.isFullDownload()) {
+                    useCaseCallback.onError(new SimpleUseCaseError("Can't download bundle file: " + cacheObject.url));
+                    return;
+                }
+                if (updateCacheJournal(state)) {
+                    useCaseCallback.onSuccess(new Pair<>(cacheObject, state.file));
+                } else {
+                    useCaseCallback.onError(new SimpleUseCaseError("Failed to save asset metadata to cache"));
+                }
+            }
+
+            @Override
+            public void waiting() {
+            }
+        };
+    }
+
+    private boolean updateCacheJournal(DownloadFileState state) {
+        long maxSize = Math.max(state.totalSize, state.downloadedSize);
+        CacheJournalItem cacheJournalItem = generateCacheItem(
+                maxSize,
+                state.downloadedSize
+        );
+        try {
+            getCache().put(cacheJournalItem);
+            return true;
+        } catch (Exception e) {
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_WARN_TAG,
+                    "Failed to update cache journal for asset. Error: " + e.getMessage()
+            );
+            return false;
         }
     }
 

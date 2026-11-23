@@ -104,7 +104,7 @@ public class JsApiNetwork {
                         }
 
                         @Override
-                        protected void error() {
+                        public void error() {
                             super.error();
                             jsResponse.status = 12163;
                         }
