@@ -50,7 +50,7 @@ public class FilesDownloaderTest {
         downloader = new FilesDownloader(core, 1000, 1000);
         spyDownloader = Mockito.spy(downloader);
 
-        doReturn(false).when(spyDownloader).addFinishCallback(
+        doReturn(false).when(spyDownloader).addFinishCallbackIsNew(
                 anyString(),
                 anyString(),
                 any(FinishDownloadFileCallback.class)

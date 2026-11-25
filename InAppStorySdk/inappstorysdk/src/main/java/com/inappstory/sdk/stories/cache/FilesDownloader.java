@@ -100,7 +100,7 @@ public class FilesDownloader {
         this.readTimeoutMs = readTimeoutMs;
     }
 
-    boolean addFinishCallback(String url, String outputFile, FinishDownloadFileCallback callback) {
+    boolean addFinishCallbackIsNew(String url, String outputFile, FinishDownloadFileCallback callback) {
         boolean isNewUrl = true;
         FileDownloadKey key = new FileDownloadKey(url, outputFile);
         synchronized (finishLock) {
@@ -451,7 +451,7 @@ public class FilesDownloader {
         DownloadFileState state = null;
         if (outputFile == null) return null;
 
-        if (addFinishCallback(
+        if (!addFinishCallbackIsNew(
                 url,
                 outputFile.getAbsolutePath(),
                 finishCallback)
