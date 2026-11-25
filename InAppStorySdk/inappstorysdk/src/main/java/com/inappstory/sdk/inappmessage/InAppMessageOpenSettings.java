@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InAppMessageOpenSettings {
-    private Integer id;
+    private String id;
 
     private boolean showOnlyIfLoaded = false;
 
@@ -24,7 +24,7 @@ public class InAppMessageOpenSettings {
     }
 
     public InAppMessageOpenSettings(
-            Integer id,
+            String id,
             boolean showOnlyIfLoaded,
             String event,
             List<String> tags
@@ -38,7 +38,7 @@ public class InAppMessageOpenSettings {
     }
 
 
-    public Integer id() {
+    public String id() {
         return id;
     }
 
@@ -63,7 +63,7 @@ public class InAppMessageOpenSettings {
         return this;
     }
 
-    public InAppMessageOpenSettings id(Integer id) {
+    public InAppMessageOpenSettings id(String id) {
         this.id = id;
         return this;
     }

@@ -12,14 +12,12 @@ public abstract class BannerPlaceLoadCallback implements IBannerPlaceLoadCallbac
 
     private String bannerPlace;
 
-
+    @Override
     public final void bannerPlaceLoaded(List<IBanner> banners) {
 
     }
 
     public abstract void bannerPlaceLoaded(int size, List<BannerData> bannerData, int widgetHeight);
-
-
 
     public BannerPlaceLoadCallback(String bannerPlace) {
         this.bannerPlace = bannerPlace;

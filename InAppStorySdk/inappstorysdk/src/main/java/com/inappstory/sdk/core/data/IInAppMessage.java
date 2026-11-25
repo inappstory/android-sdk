@@ -5,6 +5,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 
 public interface IInAppMessage extends IReaderContent {
     int id();
+    String slug();
     boolean hasPlaceholders();
     boolean hasLimit();
     long frequencyLimit();

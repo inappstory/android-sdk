@@ -312,6 +312,11 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     @Override
+    public String slug() {
+        return null;
+    }
+
+    @Override
     public String slideByIndex(int slideIndex) {
         IReaderContentSlide slide = slide(slideIndex);
         if (slide == null) return null;

@@ -137,6 +137,11 @@ public class InAppMessage implements IInAppMessage {
     }
 
     @Override
+    public String slug() {
+        return null;
+    }
+
+    @Override
     public String statTitle() {
         return campaignName;
     }

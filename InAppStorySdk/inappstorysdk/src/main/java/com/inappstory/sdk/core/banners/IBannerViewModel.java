@@ -102,4 +102,6 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void clear();
 
     void clearJsStatus();
+
+    void closeReader();
 }

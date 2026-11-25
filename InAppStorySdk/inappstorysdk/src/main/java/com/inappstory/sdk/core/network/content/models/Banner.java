@@ -87,6 +87,11 @@ public class Banner implements IBanner {
     }
 
     @Override
+    public String slug() {
+        return null;
+    }
+
+    @Override
     public Map<String, String> placeholdersMap(int index) {
         return slide(0).placeholdersMap();
     }

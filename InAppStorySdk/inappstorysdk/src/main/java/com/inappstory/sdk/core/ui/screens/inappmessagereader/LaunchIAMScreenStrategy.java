@@ -24,7 +24,7 @@ import com.inappstory.sdk.core.inappmessages.InAppMessageByIdCallback;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.inappmessages.InAppMessagesLimitCallback;
-import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
+import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdOrSlugUseCase;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageLimitsUseCase;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
@@ -41,7 +41,6 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageUndefinedAppearance;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageCloseAction;
-import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainView;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageOpenAction;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -152,11 +151,19 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 getLocalInAppMessage.error(null);
                 return;
             }
-            IInAppMessage inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
-                    inAppMessageOpenSettings.id(),
-                    ContentType.IN_APP_MESSAGE
-            );
-
+            IInAppMessage inAppMessage;
+            try {
+                int id = Integer.parseInt(inAppMessageOpenSettings.id());
+                inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
+                        id,
+                        ContentType.IN_APP_MESSAGE
+                );
+            } catch (Exception e) {
+                inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getBySlugAndType(
+                        inAppMessageOpenSettings.id(),
+                        ContentType.IN_APP_MESSAGE
+                );
+            }
             if (inAppMessage != null) {
                 if (inAppMessage.inAppMessageAppearance() instanceof InAppMessageUndefinedAppearance)
                     getLocalInAppMessage.error(null);
@@ -294,7 +301,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                             launchScreenError("Need to preload InAppMessages and session bundles first");
                         } else {
                             if (localSettings.id() != null) {
-                                new InAppMessageByIdUseCase(
+                                new InAppMessageByIdOrSlugUseCase(
                                         core,
                                         localSettings.id(),
                                         localSettings.hasTargeting(),

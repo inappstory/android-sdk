@@ -718,4 +718,9 @@ public class BannerViewModel implements IBannerViewModel {
                 getCurrentBannerState().slideJSStatus(0)
         );
     }
+
+    @Override
+    public void closeReader() {
+        bannerWidgetViewModel.removeBanner(bannerId);
+    }
 }

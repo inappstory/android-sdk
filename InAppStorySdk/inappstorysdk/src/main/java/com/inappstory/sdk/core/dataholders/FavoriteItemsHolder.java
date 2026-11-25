@@ -41,6 +41,11 @@ public class FavoriteItemsHolder implements IFavoriteItemsHolder {
     }
 
     @Override
+    public IFavoriteItem getBySlugAndType(String slug, ContentType type) {
+        return null;
+    }
+
+    @Override
     public void setByIdAndType(IFavoriteItem newContentItem, int id, ContentType type) {
         synchronized (contentLock) {
             List<IFavoriteItem> content = getContentList(type);
@@ -59,6 +64,11 @@ public class FavoriteItemsHolder implements IFavoriteItemsHolder {
                 content.add(0, newContentItem);
             }
         }
+    }
+
+    @Override
+    public void setByIdAndSlugAndType(IFavoriteItem newContentItem, int id, String slug, ContentType type) {
+
     }
 
     @Override

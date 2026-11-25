@@ -48,6 +48,12 @@ public class BannerJavascriptInterface {
 
 
     @JavascriptInterface
+    public void closeStory(String reason) {
+        slideViewModel.closeReader();
+    }
+
+
+    @JavascriptInterface
     public void sendApiRequest(String data) {
         slideViewModel.sendApiRequest(data);
     }

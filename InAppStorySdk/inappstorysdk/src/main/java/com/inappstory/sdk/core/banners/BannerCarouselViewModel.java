@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
+import com.inappstory.sdk.banners.UpdateBannerItemsData;
+import com.inappstory.sdk.banners.UpdateBannerItemsType;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.data.IBanner;
@@ -328,6 +330,29 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCa
             hasUISubs = true;
         }
         return hasUISubs;
+    }
+
+    @Override
+    public void removeBanner(int bannerId) {
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.REMOVE_BANNER,
+                        new UpdateBannerItemsData(
+                                getCurrentBannerPlaceState().items,
+                                bannerId,
+                                UpdateBannerItemsType.REMOVE
+                        )
+                )
+        );
+        IBanner rBanner = null;
+        for (IBanner banner : getCurrentBannerPlaceState().items) {
+            if (banner.id() == bannerId) {
+                rBanner = banner;
+                break;
+            }
+        }
+        if (rBanner != null)
+            getCurrentBannerPlaceState().items.remove(rBanner);
     }
 
     @NonNull

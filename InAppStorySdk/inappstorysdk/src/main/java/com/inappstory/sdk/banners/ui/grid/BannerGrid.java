@@ -14,19 +14,13 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.banners.BannerData;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
-import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
+import com.inappstory.sdk.banners.IBannerRemovedCallback;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
-import com.inappstory.sdk.banners.ui.list.BannerList;
-import com.inappstory.sdk.banners.ui.list.BannerListAdapter;
-import com.inappstory.sdk.banners.ui.list.DefaultBannerListAppearance;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerListState;
@@ -37,7 +31,6 @@ import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerGridAppearance;
-import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
@@ -62,6 +55,7 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
 
     private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
 
+    @Override
     public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
         if (bannerPlaceLoadCallback.bannerPlace() == null) {
             if (placeId != null) {
@@ -71,6 +65,11 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
             }
         }
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
+    }
+
+    @Override
+    public void removeCallback(IBannerRemovedCallback removeCallback) {
+
     }
 
     private final IBannerPlaceLoadCallback internalBannerPlaceLoadCallback = new InnerBannerPlaceLoadCallback() {
@@ -105,13 +104,15 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
 
         @Override
         public void bannerLoaded(int bannerId, boolean isCurrent) {
-            if (bannerPlaceLoadCallback != null) bannerLoaded(bannerId, isCurrent);
+            if (bannerPlaceLoadCallback != null)
+                bannerPlaceLoadCallback.bannerLoaded(bannerId, isCurrent);
 
         }
 
         @Override
         public void bannerLoadError(int bannerId, boolean isCurrent) {
-            if (bannerPlaceLoadCallback != null) bannerLoadError(bannerId, isCurrent);
+            if (bannerPlaceLoadCallback != null)
+                bannerPlaceLoadCallback.bannerLoadError(bannerId, isCurrent);
         }
 
         @Override
@@ -144,6 +145,7 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
         return customUniqueId != null ? customUniqueId : defaultUniqueId;
     }
 
+    @Override
     public void uniqueId(String customUniqueId) {
         if (customUniqueId == null || customUniqueId.isEmpty()) {
             //TODO Log error
@@ -207,6 +209,7 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
         });
     }
 
+    @Override
     public void setPlaceId(final String placeId) {
         if (Objects.equals(this.placeId, placeId)) return;
         this.placeId = placeId;
@@ -217,14 +220,17 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
         }
     }
 
+    @Override
     public void reloadBanners() {
         loadBanners(true);
     }
 
+    @Override
     public void loadBanners() {
         loadBanners(false);
     }
 
+    @Override
     public void loadBanners(boolean skipCache) {
         if (placeId == null || placeId.isEmpty()) {
             return;
@@ -234,6 +240,7 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
         }
     }
 
+    @Override
     public void setAppearanceManager(AppearanceManager appearanceManager) {
         this.customBannerGridAppearance = appearanceManager.csBannerGridInterface();
         updateAppearance();

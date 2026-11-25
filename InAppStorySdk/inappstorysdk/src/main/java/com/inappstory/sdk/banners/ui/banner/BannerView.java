@@ -91,6 +91,8 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     private boolean isLoaded;
     private Integer bannerId;
 
+
+
     public void viewModel(IBannerViewModel bannerViewModel) {
         this.bannerViewModel = bannerViewModel;
         bannerWebView.slideViewModel(bannerViewModel);
@@ -132,6 +134,9 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
 
     BannerState currentState;
 
+
+    private View testButton;
+
     @SuppressLint("WrongViewCast")
     private boolean init(Context context) {
         boolean initSuccess = true;
@@ -147,6 +152,22 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerContainer.setUseCompatPadding(false);
         loaderContainer = findViewById(R.id.loaderContainer);
         backgroundView = findViewById(R.id.background);
+
+
+
+      /*  testButton = findViewById(R.id.removeTest);
+        if (testButton != null) {
+            testButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (bannerViewModel != null) {
+                        bannerViewModel.closeReader();
+                    }
+                }
+            });
+        }*/
+
+
         loaderContainer.addView(createLoader(context));
         loaderContainer.addView(createRefresh(context));
         bannerWebView = findViewById(R.id.contentWebView);

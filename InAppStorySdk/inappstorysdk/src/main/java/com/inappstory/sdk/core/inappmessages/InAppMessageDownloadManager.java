@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdOrSlugUseCase;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
@@ -91,7 +92,7 @@ public class InAppMessageDownloadManager {
 
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
 
-     //   this.slidesDownloader.init();
+        //   this.slidesDownloader.init();
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback);
             return;

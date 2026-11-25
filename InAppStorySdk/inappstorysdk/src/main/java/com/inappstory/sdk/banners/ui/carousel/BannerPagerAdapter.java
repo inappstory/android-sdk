@@ -36,12 +36,13 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     private final float iwRatio;
     private final float itemWidth;
     private final boolean loop;
+    private final int bannersOnScreen;
     private final float bannerRadius;
     private final String iterationId;
     private final ICustomBannerPlaceholder bannerPlaceholderCreator;
 
     public boolean isLoop() {
-        return loop;
+        return (loop && banners != null && banners.size() >= bannersOnScreen + 1);
     }
 
 
@@ -54,6 +55,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
             IBannerPlaceLoadCallback bannerPlaceLoadCallback,
             String iterationId,
             boolean loop,
+            int bannersOnScreen,
             float iwRatio,
             float itemWidth,
             float bannerRadius
@@ -67,6 +69,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         this.iterationId = iterationId;
         this.bannerPlace = bannerPlace;
         this.loop = loop;
+        this.bannersOnScreen = bannersOnScreen;
         this.core = core;
         this.bannerRadius = bannerRadius;
         subscribeToFirst();
@@ -127,6 +130,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         bannerView.setListLoadCallback(listLoadCallback);
         return bannerView;
     }
+
     private void bannerInitFailed(boolean reload) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -209,7 +213,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     @Override
     public int getCount() {
-        return (loop ? 500 : 1) * banners.size();
+        return (isLoop() ? 500 : 1) * banners.size();
     }
 
     public int getDataCount() {
@@ -217,7 +221,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     }
 
     public int getStartedIndex() {
-        return (loop ? 200 : 0) * banners.size();
+        return (isLoop() ? 200 : 0) * banners.size();
     }
 
     @Override
@@ -227,5 +231,12 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     @Override
     public void onUpdate(BannerState newValue) {
+    }
+
+    public void removeBanner(IBanner removedData) {
+        if (banners.contains(removedData)) {
+            banners.remove(removedData);
+            notifyDataSetChanged();
+        }
     }
 }

@@ -35,6 +35,11 @@ public class ListContentHolder implements IListsContentHolder {
         return null;
     }
 
+    @Override
+    public IListItemContent getBySlugAndType(String slug, ContentType type) {
+        return null;
+    }
+
     private final Object contentLock = new Object();
 
     private final List<IListItemContent> stories = new ArrayList<>();
@@ -91,6 +96,11 @@ public class ListContentHolder implements IListsContentHolder {
                 content.add(newContentItem);
             }
         }
+    }
+
+    @Override
+    public void setByIdAndSlugAndType(IListItemContent newContentItem, int id, String slug, ContentType type) {
+
     }
 
     @Override

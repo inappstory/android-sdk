@@ -6,6 +6,7 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 
 public class ReaderContentHolder implements IReaderContentHolder {
 
@@ -26,6 +27,19 @@ public class ReaderContentHolder implements IReaderContentHolder {
             if (content == null) return null;
             for (IReaderContent contentItem : content) {
                 if (contentItem.id() == id)
+                    return contentItem;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public IReaderContent getBySlugAndType(String slug, ContentType type) {
+        synchronized (contentLock) {
+            List<IReaderContent> content = getContentList(type);
+            if (content == null) return null;
+            for (IReaderContent contentItem : content) {
+                if (Objects.equals(contentItem.slug(), slug))
                     return contentItem;
             }
         }
@@ -63,6 +77,31 @@ public class ReaderContentHolder implements IReaderContentHolder {
             boolean contentIsNotReplaced = true;
             while (contentIterator.hasNext()) {
                 if (contentIterator.next().id() == id) {
+                    if (newContentItem == null) {
+                        contentIterator.remove();
+                    } else {
+                        contentIterator.set(newContentItem);
+                    }
+                    contentIsNotReplaced = false;
+                    break;
+                }
+            }
+            if (contentIsNotReplaced && newContentItem != null) {
+                content.add(newContentItem);
+            }
+        }
+    }
+
+    @Override
+    public void setByIdAndSlugAndType(IReaderContent newContentItem, int id, String slug, ContentType type) {
+        synchronized (contentLock) {
+            List<IReaderContent> content = getContentList(type);
+            if (content == null) return;
+            ListIterator<IReaderContent> contentIterator = content.listIterator();
+            boolean contentIsNotReplaced = true;
+            while (contentIterator.hasNext()) {
+                IReaderContent item = contentIterator.next();
+                if (item.id() == id || Objects.equals(item.slug(), slug)) {
                     if (newContentItem == null) {
                         contentIterator.remove();
                     } else {

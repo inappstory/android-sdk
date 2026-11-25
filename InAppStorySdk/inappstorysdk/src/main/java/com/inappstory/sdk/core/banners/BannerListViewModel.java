@@ -306,6 +306,11 @@ public class BannerListViewModel implements IBannersWidgetViewModel<BannerListSt
         return hasUISubs;
     }
 
+    @Override
+    public void removeBanner(int bannerId) {
+
+    }
+
     @NonNull
     @Override
     public String toString() {
