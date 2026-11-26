@@ -67,7 +67,7 @@ public class FavoriteItemsHolder implements IFavoriteItemsHolder {
     }
 
     @Override
-    public void setByIdAndAliasesAndType(IFavoriteItem newContentItem, int id, String slug, ContentType type) {
+    public void setByIdAndAliasesAndType(IFavoriteItem newContentItem, int id, List<String> aliases, ContentType type) {
 
     }
 

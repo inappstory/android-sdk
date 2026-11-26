@@ -99,7 +99,7 @@ public class ListContentHolder implements IListsContentHolder {
     }
 
     @Override
-    public void setByIdAndAliasesAndType(IListItemContent newContentItem, int id, String slug, ContentType type) {
+    public void setByIdAndAliasesAndType(IListItemContent newContentItem, int id, List<String> aliases, ContentType type) {
 
     }
 
