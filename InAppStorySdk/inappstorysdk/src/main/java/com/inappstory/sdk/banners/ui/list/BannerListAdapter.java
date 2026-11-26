@@ -1,5 +1,7 @@
 package com.inappstory.sdk.banners.ui.list;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +55,15 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
         this.bannerRadius = bannerRadius;
     }
 
+    public boolean removeItemAt(int index) {
+        if (index >= 0 && index < getItemCount()) {
+            banners.remove(index);
+            notifyItemRemoved(index);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public int getItemViewType(int position) {
         return position;
@@ -65,7 +76,7 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     public BannerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.cs_banner_list_item, parent, false);
-        return new BannerViewHolder(view, banners.get(viewType).bannerAppearance().singleBannerAspectRatio());
+        return new BannerViewHolder(view, banners.get(viewType));
     }
 
 
@@ -78,7 +89,8 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     public void onViewDetachedFromWindow(@NonNull BannerViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
         int position = holder.getAbsoluteAdapterPosition();
-        IBanner banner = banners.get(position % banners.size());
+        IBanner banner = holder.banner();
+        if (banner == null) return;
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
                 .widgetViewModels()

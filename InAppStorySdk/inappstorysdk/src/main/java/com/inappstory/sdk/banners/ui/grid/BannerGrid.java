@@ -264,7 +264,7 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
                         .widgetViewModels()
                         .bannerPlaceViewModels();
                 bannerGridViewModel = (BannerListViewModel)
-                        holder.getOrCreate(uniqueId(), BannerWidgetViewModelType.LAZY_LIST);
+                        holder.getOrCreate(uniqueId(), BannerWidgetViewModelType.GRID);
             }
         });
 

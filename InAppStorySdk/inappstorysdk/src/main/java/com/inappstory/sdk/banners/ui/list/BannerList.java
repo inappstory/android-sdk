@@ -362,7 +362,10 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                     }
                                 }
                                 if (removedData != null) {
-                                    //removeItemAt(data.items().indexOf(removedData));
+                                    BannerListAdapter adapter = (BannerListAdapter) getAdapter();
+                                    if (adapter != null) {
+                                        adapter.removeItemAt(data.items().indexOf(removedData));
+                                    }
                                     if (bannerHideCallback != null)
                                         bannerHideCallback.bannerIsHidden(
                                                 new BannerData(

@@ -77,6 +77,7 @@ public class BannerPlaceViewModelsHolder {
             if (!viewModels.containsKey(uniqueId)) {
                 switch (type) {
                     case LAZY_LIST:
+                    case GRID:
                         viewModels.put(uniqueId, new BannerListViewModel(core, uniqueId));
                         break;
                     case PREVIEW:
