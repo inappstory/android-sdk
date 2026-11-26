@@ -309,6 +309,7 @@ public class ModelFields {
         public static final String layoutTemplateVariables = "layout_template_variables";
         public static final String events = "events";
         public static final String slides = "slides";
+        public static final String aliases = "aliases";
         public static final String hasSwipeUp = "has_swipe_up";
         public static final String disableClose = "disable_close";
         public static final String screenType = "type";

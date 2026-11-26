@@ -334,25 +334,26 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCa
 
     @Override
     public void removeBanner(int bannerId) {
+        BannerCarouselState state = getCurrentBannerPlaceState();
         singleTimeEvents.updateValue(
                 new STETypeAndData(
                         STEDataType.REMOVE_BANNER,
                         new UpdateBannerItemsData(
-                                getCurrentBannerPlaceState().items,
+                                new ArrayList<>(state.items),
                                 bannerId,
                                 UpdateBannerItemsType.REMOVE
                         )
                 )
         );
         IBanner rBanner = null;
-        for (IBanner banner : getCurrentBannerPlaceState().items) {
+        for (IBanner banner : state.items) {
             if (banner.id() == bannerId) {
                 rBanner = banner;
                 break;
             }
         }
         if (rBanner != null)
-            getCurrentBannerPlaceState().items.remove(rBanner);
+            state.items.remove(rBanner);
     }
 
     @NonNull

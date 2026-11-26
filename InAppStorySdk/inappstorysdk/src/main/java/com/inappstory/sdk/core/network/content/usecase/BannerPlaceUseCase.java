@@ -89,7 +89,9 @@ public class BannerPlaceUseCase {
                                         List<IBanner> banners = new ArrayList<>();
                                         for (IBanner banner : bannerPlaceResponse.banners()) {
                                             if (checkContentForShownFrequency(banner))
-                                                banners.add(banner);
+                                                if (!core.widgetViewModels().bannerPlaceViewModels()
+                                                        .bannerIsClosed(banner.id()))
+                                                    banners.add(banner);
                                         }
                                         loadCallback.success(banners);
                                     }

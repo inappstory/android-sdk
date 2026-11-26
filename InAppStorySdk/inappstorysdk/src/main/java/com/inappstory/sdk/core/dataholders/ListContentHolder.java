@@ -36,7 +36,7 @@ public class ListContentHolder implements IListsContentHolder {
     }
 
     @Override
-    public IListItemContent getBySlugAndType(String slug, ContentType type) {
+    public IListItemContent getByAliasAndType(String alias, ContentType type) {
         return null;
     }
 
@@ -99,7 +99,7 @@ public class ListContentHolder implements IListsContentHolder {
     }
 
     @Override
-    public void setByIdAndSlugAndType(IListItemContent newContentItem, int id, String slug, ContentType type) {
+    public void setByIdAndAliasesAndType(IListItemContent newContentItem, int id, String slug, ContentType type) {
 
     }
 

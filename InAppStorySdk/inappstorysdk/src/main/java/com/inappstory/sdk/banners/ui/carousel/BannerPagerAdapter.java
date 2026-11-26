@@ -1,6 +1,8 @@
 package com.inappstory.sdk.banners.ui.carousel;
 
 import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -223,6 +225,12 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     public int getStartedIndex() {
         return (isLoop() ? 200 : 0) * banners.size();
     }
+
+    @Override
+    public int getItemPosition(@NonNull Object object) {
+        return POSITION_NONE;
+    }
+
 
     @Override
     public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {

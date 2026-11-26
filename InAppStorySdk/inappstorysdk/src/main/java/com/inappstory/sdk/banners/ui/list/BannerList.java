@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,8 +22,10 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
-import com.inappstory.sdk.banners.IBannerRemovedCallback;
+import com.inappstory.sdk.banners.IBannerHideCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
+import com.inappstory.sdk.banners.UpdateBannerItemsData;
+import com.inappstory.sdk.banners.UpdateBannerItemsType;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.IASCore;
@@ -40,6 +41,7 @@ import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.banners.BannerData;
+import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -323,6 +325,63 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
 
     private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
 
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (bannerListViewModel != null)
+            bannerListViewModel.singleTimeEvents().subscribeAndGetValue(steObserver);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (bannerListViewModel != null)
+            bannerListViewModel.singleTimeEvents().unsubscribe(steObserver);
+    }
+
+
+    Observer<STETypeAndData> steObserver = new Observer<STETypeAndData>() {
+        @Override
+        public void onUpdate(STETypeAndData newValue) {
+            if (newValue == null) return;
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    switch (newValue.type()) {
+                        case REMOVE_BANNER:
+                            UpdateBannerItemsData data = (UpdateBannerItemsData) newValue.data();
+
+                            if (data.type() == UpdateBannerItemsType.REMOVE) {
+                                int bannerId = data.id();
+                                IBanner removedData = null;
+                                for (IBanner bannerData : data.items()) {
+                                    if (bannerData.id() == bannerId) {
+                                        removedData = bannerData;
+                                        break;
+                                    }
+                                }
+                                if (removedData != null) {
+                                    //removeItemAt(data.items().indexOf(removedData));
+                                    if (bannerHideCallback != null)
+                                        bannerHideCallback.bannerIsHidden(
+                                                new BannerData(
+                                                        removedData,
+                                                        placeId
+                                                ),
+                                                -1
+                                        );
+                                }
+                            }
+                            break;
+                    }
+                }
+            });
+
+        }
+    };
+
+
     public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
         if (bannerPlaceLoadCallback.bannerPlace() == null) {
             if (placeId != null) {
@@ -334,9 +393,12 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
     }
 
-    @Override
-    public void removeCallback(IBannerRemovedCallback removeCallback) {
+    private IBannerHideCallback bannerHideCallback = null;
 
+
+    @Override
+    public void bannerHideCallback(IBannerHideCallback bannerHideCallback) {
+        this.bannerHideCallback = bannerHideCallback;
     }
 
     @Override

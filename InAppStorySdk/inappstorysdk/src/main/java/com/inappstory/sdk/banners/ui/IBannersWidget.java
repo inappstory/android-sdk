@@ -2,7 +2,7 @@ package com.inappstory.sdk.banners.ui;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
-import com.inappstory.sdk.banners.IBannerRemovedCallback;
+import com.inappstory.sdk.banners.IBannerHideCallback;
 
 public interface IBannersWidget {
     void loadBanners();
@@ -19,5 +19,5 @@ public interface IBannersWidget {
 
     void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback);
 
-    void removeCallback(IBannerRemovedCallback removeCallback);
+    void bannerHideCallback(IBannerHideCallback removeCallback);
 }

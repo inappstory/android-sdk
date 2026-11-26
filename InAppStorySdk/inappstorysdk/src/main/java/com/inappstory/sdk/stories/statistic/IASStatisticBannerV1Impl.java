@@ -181,9 +181,30 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
 
     private final String OPEN_EVENT_NAME = "view";
     private final String CLOSE_EVENT_NAME = "close";
+    private final String HIDE_EVENT_NAME = "hide";
 
     @Override
     public void sendCloseEvent(
+            int bannerId,
+            int slideIndex,
+            int slidesTotal,
+            long duration,
+            String iterationId
+    ) {
+        if (disabled) return;
+        String eventId = UUID.randomUUID().toString();
+        BannerStatisticV1Task task = new BannerStatisticV1Task();
+        task.bannerId = bannerId;
+        task.eventId = eventId;
+        task.iterationId = iterationId;
+        task.slideIndex = slideIndex;
+        task.durationMs = duration;
+        task.slideTotal = slidesTotal;
+        task.event = CLOSE_EVENT_NAME;
+        addTask(task);
+    }
+    @Override
+    public void sendHideEvent(
             int bannerId,
             int slideIndex,
             int slidesTotal,

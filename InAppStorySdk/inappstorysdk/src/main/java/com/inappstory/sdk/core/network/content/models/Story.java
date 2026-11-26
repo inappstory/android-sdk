@@ -20,9 +20,11 @@ import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.GameInstance;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -312,8 +314,13 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     @Override
-    public String slug() {
-        return null;
+    public List<String> aliases() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public boolean hasAlias(String alias) {
+        return false;
     }
 
     @Override

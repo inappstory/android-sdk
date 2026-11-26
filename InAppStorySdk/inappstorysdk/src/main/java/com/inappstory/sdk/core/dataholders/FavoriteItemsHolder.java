@@ -41,7 +41,7 @@ public class FavoriteItemsHolder implements IFavoriteItemsHolder {
     }
 
     @Override
-    public IFavoriteItem getBySlugAndType(String slug, ContentType type) {
+    public IFavoriteItem getByAliasAndType(String alias, ContentType type) {
         return null;
     }
 
@@ -67,7 +67,7 @@ public class FavoriteItemsHolder implements IFavoriteItemsHolder {
     }
 
     @Override
-    public void setByIdAndSlugAndType(IFavoriteItem newContentItem, int id, String slug, ContentType type) {
+    public void setByIdAndAliasesAndType(IFavoriteItem newContentItem, int id, String slug, ContentType type) {
 
     }
 

@@ -68,10 +68,10 @@ public class InAppMessagesUseCase {
                                         boolean hasDeviceSupportedMessage = false;
                                         for (IInAppMessage message : inAppMessageFeed.messages()) {
                                             hasDeviceSupportedMessage = true;
-                                            core.contentHolder().readerContent().setByIdAndSlugAndType(
+                                            core.contentHolder().readerContent().setByIdAndAliasesAndType(
                                                     message,
                                                     message.id(),
-                                                    message.slug(),
+                                                    message.aliases(),
                                                     ContentType.IN_APP_MESSAGE
                                             );
                                         }

@@ -18,13 +18,13 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InAppMessageByIdOrSlugUseCase {
+public class InAppMessageByIdOrAliasUseCase {
     private final IASCore core;
     private final String idOrSlug;
     private final List<String> tags;
     private final boolean useTargeting;
 
-    public InAppMessageByIdOrSlugUseCase(IASCore core, String idOrSlug, boolean useTargeting, List<String> tags) {
+    public InAppMessageByIdOrAliasUseCase(IASCore core, String idOrSlug, boolean useTargeting, List<String> tags) {
         this.core = core;
         this.idOrSlug = idOrSlug;
         this.useTargeting = useTargeting;
@@ -48,10 +48,10 @@ public class InAppMessageByIdOrSlugUseCase {
                                 NetworkCallback<InAppMessage> iamCallback = new NetworkCallback<InAppMessage>() {
                                     @Override
                                     public void onSuccess(InAppMessage response) {
-                                        core.contentHolder().readerContent().setByIdAndSlugAndType(
+                                        core.contentHolder().readerContent().setByIdAndAliasesAndType(
                                                 response,
                                                 response.id(),
-                                                response.slug(),
+                                                response.aliases(),
                                                 ContentType.IN_APP_MESSAGE
                                         );
                                         callback.success(response);

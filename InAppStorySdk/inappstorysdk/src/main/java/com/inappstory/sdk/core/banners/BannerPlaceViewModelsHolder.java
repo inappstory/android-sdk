@@ -15,7 +15,23 @@ public class BannerPlaceViewModelsHolder {
     private Map<String, IBannersWidgetViewModel> viewModels = new HashMap<>();
     private final Object lock = new Object();
     private final IASCore core;
+    private final Set<Integer> closedBannerIds = new HashSet<>();
 
+    public void closeBanner(int id) {
+        synchronized (lock) {
+            closedBannerIds.add(id);
+        }
+    }
+
+    public boolean bannerIsClosed(int id) {
+        synchronized (lock) {
+            return closedBannerIds.contains(id);
+        }
+    }
+
+    public Set<IBannersWidgetViewModel> allViewModels() {
+        return new HashSet<>(viewModels.values());
+    }
 
     public BannerPlaceViewModelsHolder(IASCore core) {
         this.core = core;
@@ -110,6 +126,7 @@ public class BannerPlaceViewModelsHolder {
     public void reloadSession() {
         List<IBannersWidgetViewModel> placeViewModels;
         synchronized (lock) {
+            closedBannerIds.clear();
             placeViewModels = new ArrayList<>(viewModels.values());
             // viewModels.clear();
         }
@@ -121,6 +138,7 @@ public class BannerPlaceViewModelsHolder {
     public void clear() {
         List<IBannersWidgetViewModel> placeViewModels;
         synchronized (lock) {
+            closedBannerIds.clear();
             placeViewModels = new ArrayList<>(viewModels.values());
             viewModels.clear();
         }

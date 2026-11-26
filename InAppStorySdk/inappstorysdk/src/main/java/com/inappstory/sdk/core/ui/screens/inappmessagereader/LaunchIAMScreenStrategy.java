@@ -24,7 +24,7 @@ import com.inappstory.sdk.core.inappmessages.InAppMessageByIdCallback;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.inappmessages.InAppMessagesLimitCallback;
-import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdOrSlugUseCase;
+import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdOrAliasUseCase;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageLimitsUseCase;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
@@ -159,7 +159,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                         ContentType.IN_APP_MESSAGE
                 );
             } catch (Exception e) {
-                inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getBySlugAndType(
+                inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getByAliasAndType(
                         inAppMessageOpenSettings.id(),
                         ContentType.IN_APP_MESSAGE
                 );
@@ -301,7 +301,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                             launchScreenError("Need to preload InAppMessages and session bundles first");
                         } else {
                             if (localSettings.id() != null) {
-                                new InAppMessageByIdOrSlugUseCase(
+                                new InAppMessageByIdOrAliasUseCase(
                                         core,
                                         localSettings.id(),
                                         localSettings.hasTargeting(),

@@ -2,11 +2,11 @@ package com.inappstory.sdk.core.data;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface IReaderContent extends IStatData, IContentWithStatus {
     Map<String, String> layoutTemplateVariables();
-    String slug();
+    List<String> aliases();
+    boolean hasAlias(String alias);
     String slideByIndex(int index);
     List<IResource> vodResources(int index);
     List<IResource> staticResources(int index);

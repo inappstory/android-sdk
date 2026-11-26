@@ -11,6 +11,7 @@ import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,8 +88,13 @@ public class Banner implements IBanner {
     }
 
     @Override
-    public String slug() {
-        return null;
+    public List<String> aliases() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public boolean hasAlias(String alias) {
+        return false;
     }
 
     @Override

@@ -17,6 +17,7 @@ import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,9 @@ public class InAppMessage implements IInAppMessage {
 
     @SerializedName(ModelFields.InAppMessage.slides)
     public List<InAppMessageSlide> slides;
+
+    @SerializedName(ModelFields.InAppMessage.aliases)
+    public List<String> aliases;
 
     @SerializedName(ModelFields.InAppMessage.hasSwipeUp)
     public Boolean hasSwipeUp;
@@ -103,6 +107,11 @@ public class InAppMessage implements IInAppMessage {
     }
 
     @Override
+    public boolean hasAlias(String alias) {
+        return aliases != null && aliases.contains(alias);
+    }
+
+    @Override
     public Map<String, String> placeholdersMap(int index) {
         return slide(index).placeholdersMap();
     }
@@ -137,8 +146,8 @@ public class InAppMessage implements IInAppMessage {
     }
 
     @Override
-    public String slug() {
-        return null;
+    public List<String> aliases() {
+        return aliases != null ? aliases : new ArrayList<>();
     }
 
     @Override

@@ -5,10 +5,15 @@ import java.util.Objects;
 public class BannerViewModelKey {
     private final int bannerId;
     private final int bannerIndex;
+
+    public boolean bannerPlaceEquals(String bannerPlace) {
+        return Objects.equals(bannerPlace, this.bannerPlace);
+    }
+
     private final String bannerPlace;
 
     public boolean correct(int bannerId, String bannerPlace) {
-        return this.bannerPlace.equals(bannerPlace) && this.bannerId == bannerId;
+        return Objects.equals(bannerPlace, this.bannerPlace) && this.bannerId == bannerId;
     }
 
     public BannerViewModelKey(int bannerId, int bannerIndex, String bannerPlace) {

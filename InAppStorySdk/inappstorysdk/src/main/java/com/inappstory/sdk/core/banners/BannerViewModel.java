@@ -443,7 +443,6 @@ public class BannerViewModel implements IBannerViewModel {
                     System.currentTimeMillis() - shift - lastTimer,
                     iterationId
             );
-            // TODO Add duration first
         }
         if (eventData != null) {
             final Map<String, String> widgetEventMap = JsonParser.toMap(eventData);
@@ -721,6 +720,32 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void closeReader() {
-        bannerWidgetViewModel.removeBanner(bannerId);
+        Set<IBannersWidgetViewModel> viewModels = core
+                .widgetViewModels()
+                .bannerPlaceViewModels().allViewModels();
+        for (IBannersWidgetViewModel viewModel : viewModels) {
+            viewModel.removeBanner(bannerId);
+        }
+        core.widgetViewModels()
+                .bannerPlaceViewModels().closeBanner(bannerId);
+      /*   long shift = 0;
+        long lastTimer = 0;
+        synchronized (timerLock) {
+            if (lastStartTimer == -1) {
+                if (infiniteTimer == -1)
+                    return;
+                lastTimer = infiniteTimer;
+            } else {
+                lastTimer = lastStartTimer;
+            }
+            shift = pauseShift;
+        }
+       core.statistic().bannersV1().sendHideEvent(
+                bannerId,
+                0,
+                1,
+                System.currentTimeMillis() - shift - lastTimer,
+                iterationId
+        );*/
     }
 }

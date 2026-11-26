@@ -24,7 +24,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.BannerCarouselNavigationCallback;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
-import com.inappstory.sdk.banners.IBannerRemovedCallback;
+import com.inappstory.sdk.banners.IBannerHideCallback;
 import com.inappstory.sdk.banners.OnVerticalGestureAvailabilityCallback;
 import com.inappstory.sdk.banners.UpdateBannerItemsData;
 import com.inappstory.sdk.banners.UpdateBannerItemsType;
@@ -33,11 +33,9 @@ import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerCarouselViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
-import com.inappstory.sdk.core.banners.BannerViewModelKey;
 import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
-import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -48,15 +46,11 @@ import com.inappstory.sdk.core.banners.ICustomBannerCarouselAppearance;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.banners.BannerData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
-import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -116,8 +110,8 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
     }
 
     @Override
-    public void removeCallback(IBannerRemovedCallback removeCallback) {
-        this.bannerRemovedCallback = removeCallback;
+    public void bannerHideCallback(IBannerHideCallback bannerHideCallback) {
+        this.bannerHideCallback = bannerHideCallback;
     }
 
 
@@ -174,7 +168,7 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
     };
 
     private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
-    private IBannerRemovedCallback bannerRemovedCallback = null;
+    private IBannerHideCallback bannerHideCallback = null;
 
 
     public void navigationCallback(BannerCarouselNavigationCallback bannerCarouselNavigationCallback) {
@@ -455,45 +449,51 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
 
     Observer<STETypeAndData> steObserver = new Observer<STETypeAndData>() {
         @Override
-        public void onUpdate(STETypeAndData newValue) {
+        public void onUpdate(final STETypeAndData newValue) {
             if (newValue == null) return;
-            switch (newValue.type()) {
-                case ENABLE_VERTICAL_SWIPE:
-                    verticalGestureAvailabilityCallback.onAvailabilityChanged(true);
-                    break;
-                case DISABLE_VERTICAL_SWIPE:
-                    verticalGestureAvailabilityCallback.onAvailabilityChanged(false);
-                    break;
-                case REMOVE_BANNER:
-                    UpdateBannerItemsData data = (UpdateBannerItemsData) newValue.data();
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    switch (newValue.type()) {
+                        case ENABLE_VERTICAL_SWIPE:
+                            verticalGestureAvailabilityCallback.onAvailabilityChanged(true);
+                            break;
+                        case DISABLE_VERTICAL_SWIPE:
+                            verticalGestureAvailabilityCallback.onAvailabilityChanged(false);
+                            break;
+                        case REMOVE_BANNER:
+                            UpdateBannerItemsData data = (UpdateBannerItemsData) newValue.data();
 
-                    if (data.type() == UpdateBannerItemsType.REMOVE) {
-                        int bannerId = data.id();
-                        List<IBanner> newData = new ArrayList<>();
-                        IBanner removedData = null;
-                        for (IBanner bannerData : data.items()) {
-                            if (bannerData.id() == bannerId) {
-                                removedData = bannerData;
-                            } else {
-                                newData.add(bannerData);
+                            if (data.type() == UpdateBannerItemsType.REMOVE) {
+                                int bannerId = data.id();
+                                List<IBanner> newData = new ArrayList<>();
+                                IBanner removedData = null;
+                                for (IBanner bannerData : data.items()) {
+                                    if (bannerData.id() == bannerId) {
+                                        removedData = bannerData;
+                                    } else {
+                                        newData.add(bannerData);
+                                    }
+                                }
+                                if (removedData != null) {
+                                    BannerPagerAdapter adapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
+                                    if (adapter != null && adapter.getCount() > 0) {
+                                        adapter.removeBanner(removedData);
+                                    }
+                                    if (bannerHideCallback != null)
+                                        bannerHideCallback.bannerIsHidden(
+                                                new BannerData(
+                                                        removedData,
+                                                        placeId
+                                                ),
+                                                calculateHeight(newData)
+                                        );
+                                }
                             }
-                        }
-                        if (removedData != null) {
-                            BannerPagerAdapter adapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
-                            if (adapter != null && adapter.getCount() > 0) {
-                                adapter.removeBanner(removedData);
-                            }
-                            bannerRemovedCallback.bannerRemoved(
-                                    new BannerData(
-                                            removedData,
-                                            placeId
-                                    ),
-                                    calculateHeight(newData)
-                            );
-                        }
+                            break;
                     }
-                    break;
-            }
+                }
+            });
         }
     };
 
@@ -552,8 +552,11 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
 
     private void init(Context context) {
         View.inflate(context, R.layout.cs_banner_widget, this);
+
+
         bannerViewPager = findViewById(R.id.banner_pager);
         bannerViewPager.addOnPageChangeListener(pageChangeListener);
+
         initViewModel();
     }
 
@@ -686,7 +689,7 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
                         List<IBanner> items = newValue.getItems();
                         BannerPagerAdapter adapter = new BannerPagerAdapter(
                                 core,
-                                items,
+                                new ArrayList<>(items),
                                 placeId,
                                 uniqueId(),
                                 new ICustomBannerPlaceholder() {
