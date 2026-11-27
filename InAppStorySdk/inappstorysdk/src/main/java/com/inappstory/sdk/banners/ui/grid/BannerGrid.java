@@ -310,14 +310,6 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
         );
     }
 
-    private boolean checkVisibility() {
-        Rect rowRect = new Rect();
-        getGlobalVisibleRect(rowRect);
-        Rect displayRect = new Rect();
-        getWindowVisibleDisplayFrame(displayRect);
-        return rowRect.top <= displayRect.bottom && rowRect.bottom >= displayRect.top;
-    }
-
     private boolean externalPause = false;
 
 
@@ -333,11 +325,7 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
                         IBanner banner = banners.get(position);
 
                         BannerView bannerView = new BannerView(parent.getContext());
-                        IBannerViewModel bannerViewModel = bannerGridViewModel.getBannerViewModel(
-                                banner.id(),
-                                position
-                        );
-                        bannerViewModel.iterationId(state.iterationId());
+
                         String tag = "banner_" + position;
                         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
                         bannerView.setSize(-1, -1, true);
@@ -347,9 +335,24 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
                         );
                         bannerView.setLayoutParams(lp);
                         bannerView.setTag(tag);
+                        return bannerView;
+                    }
+
+                    @Override
+                    public void bindView(View view, IBanner item, int position) {
+                        IBanner banner = banners.get(position);
+                        BannerView bannerView = (BannerView) view;
+                        IBannerViewModel bannerViewModel = bannerGridViewModel.getBannerViewModel(
+                                banner.id(),
+                                position
+                        );
                         bannerView.viewModel(
                                 bannerViewModel
                         );
+                        bannerViewModel.iterationId(state.iterationId());
+                        if (bannerView.checkVisibility()) {
+                            bannerViewModel.bannerIsActive(true);
+                        }
                         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
                             @Override
                             public void use(@NonNull IASCore core) {
@@ -357,15 +360,9 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
                                         core.contentLoader().bannerDownloadManager();
                                 bannerDownloadManager.setMaxPriority(banner.id(), false);
                                 bannerViewModel.loadContent(false, null);
-                                bannerViewModel.bannerIsActive(true);
+
                             }
                         });
-                        return bannerView;
-                    }
-
-                    @Override
-                    public void bindView(View view, IBanner item, int position) {
-                        IBanner banner = banners.get(position);
                     }
                 }
         );
@@ -410,7 +407,15 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-
+                    for (int i = 0; i < childCount; i++) {
+                        BannerView bannerView = ((BannerView) getChildAt(i));
+                        IBannerViewModel viewModel = bannerView.viewModel();
+                        if (viewModel == null) continue;
+                        boolean visibility = bannerView.checkVisibility();
+                        if (visibility)
+                            viewModel.bannerIsActive(true);
+                        bannerView.pauseResumeBannerIfVisibilityChanged(visibility);
+                    }
                 }
             });
             executorService.freeExecutor();

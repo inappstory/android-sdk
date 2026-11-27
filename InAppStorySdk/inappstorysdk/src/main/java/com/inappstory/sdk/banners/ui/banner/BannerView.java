@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
@@ -91,6 +92,29 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
 
     private boolean isLoaded;
     private Integer bannerId;
+
+    private boolean currentVisibility = false;
+
+    public boolean checkVisibility() {
+        Rect rowRect = new Rect();
+        getGlobalVisibleRect(rowRect);
+        Rect displayRect = new Rect();
+        getWindowVisibleDisplayFrame(displayRect);
+        return rowRect.top <= displayRect.bottom && rowRect.bottom >= displayRect.top;
+    }
+
+    public void pauseResumeBannerIfVisibilityChanged(boolean newVisibility) {
+        if (currentVisibility != newVisibility) {
+            currentVisibility = newVisibility;
+            if (newVisibility) {
+                if (!bannerStarted)
+                    startBanner();
+                resumeBanner();
+            } else {
+                pauseBanner();
+            }
+        }
+    }
 
     public void viewModel(IBannerViewModel bannerViewModel) {
         this.bannerViewModel = bannerViewModel;
@@ -226,12 +250,15 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         );
     }
 
+    private boolean bannerStarted = false;
+
     public void startBanner() {
         bannerViewModel.singleTimeEvents().subscribe(
                 steTypeAndDataObserver
         );
         if (!isLoaded) return;
         if (bannerWebView == null) return;
+        bannerStarted = true;
         if (bannerViewModel != null) {
             bannerViewModel.bannerIsShown();
         }

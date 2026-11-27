@@ -72,11 +72,11 @@ android {
         jvmTarget = '1.8'
         freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
-    publishing {
+   /* publishing {
         singleVariant("release") {
             withSourcesJar()
         }
-    }
+    }*/
     namespace 'com.inappstory.sdk'
 }
 
@@ -100,6 +100,7 @@ dependencies {
     implementation "com.github.inappstory:android-sdk-utilsconnector:$utils_connector_version"
 }
 
+/*
 afterEvaluate {
     publishing {
         publications {
@@ -125,3 +126,4 @@ afterEvaluate {
         }
     }
 }
+ */
