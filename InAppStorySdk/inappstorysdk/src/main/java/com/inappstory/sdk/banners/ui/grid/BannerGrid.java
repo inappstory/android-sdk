@@ -28,6 +28,7 @@ import com.inappstory.sdk.core.banners.BannerDownloadManager;
 import com.inappstory.sdk.core.banners.BannerListState;
 import com.inappstory.sdk.core.banners.BannerListViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
+import com.inappstory.sdk.core.banners.BannerViewModel;
 import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
@@ -325,7 +326,13 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
                         IBanner banner = banners.get(position);
 
                         BannerView bannerView = new BannerView(parent.getContext());
-
+                        IBannerViewModel bannerViewModel = bannerGridViewModel.getBannerViewModel(
+                                banner.id(),
+                                position
+                        );
+                        bannerView.viewModel(
+                                bannerViewModel
+                        );
                         String tag = "banner_" + position;
                         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
                         bannerView.setSize(-1, -1, true);
@@ -342,13 +349,8 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
                     public void bindView(View view, IBanner item, int position) {
                         IBanner banner = banners.get(position);
                         BannerView bannerView = (BannerView) view;
-                        IBannerViewModel bannerViewModel = bannerGridViewModel.getBannerViewModel(
-                                banner.id(),
-                                position
-                        );
-                        bannerView.viewModel(
-                                bannerViewModel
-                        );
+                        IBannerViewModel bannerViewModel = bannerView.viewModel();
+                        if (bannerViewModel == null) return;
                         bannerViewModel.iterationId(state.iterationId());
                         if (bannerView.checkVisibility()) {
                             bannerViewModel.bannerIsActive(true);
@@ -360,7 +362,6 @@ public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerL
                                         core.contentLoader().bannerDownloadManager();
                                 bannerDownloadManager.setMaxPriority(banner.id(), false);
                                 bannerViewModel.loadContent(false, null);
-
                             }
                         });
                     }

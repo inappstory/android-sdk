@@ -695,6 +695,7 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void bannerIsActive(boolean active) {
+        if (this.bannerIsActive == active) return;
         this.bannerIsActive = active;
         stateObservable.setValue(getCurrentBannerState().copy().bannerIsActive(active));
     }
