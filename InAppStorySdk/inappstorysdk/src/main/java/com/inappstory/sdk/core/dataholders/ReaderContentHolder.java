@@ -32,6 +32,19 @@ public class ReaderContentHolder implements IReaderContentHolder {
         return null;
     }
 
+    @Override
+    public IReaderContent getByAliasAndType(String alias, ContentType type) {
+        synchronized (contentLock) {
+            List<IReaderContent> content = getContentList(type);
+            if (content == null) return null;
+            for (IReaderContent contentItem : content) {
+                if (contentItem.hasAlias(alias))
+                    return contentItem;
+            }
+        }
+        return null;
+    }
+
     private final Object contentLock = new Object();
 
     private final List<IReaderContent> stories = new ArrayList<>();
@@ -63,6 +76,42 @@ public class ReaderContentHolder implements IReaderContentHolder {
             boolean contentIsNotReplaced = true;
             while (contentIterator.hasNext()) {
                 if (contentIterator.next().id() == id) {
+                    if (newContentItem == null) {
+                        contentIterator.remove();
+                    } else {
+                        contentIterator.set(newContentItem);
+                    }
+                    contentIsNotReplaced = false;
+                    break;
+                }
+            }
+            if (contentIsNotReplaced && newContentItem != null) {
+                content.add(newContentItem);
+            }
+        }
+    }
+
+    @Override
+    public void setByIdAndAliasesAndType(IReaderContent newContentItem,
+                                         int id,
+                                         List<String> aliases,
+                                         ContentType type) {
+        synchronized (contentLock) {
+            List<IReaderContent> content = getContentList(type);
+            if (content == null) return;
+            ListIterator<IReaderContent> contentIterator = content.listIterator();
+            boolean contentIsNotReplaced = true;
+            while (contentIterator.hasNext()) {
+                IReaderContent item = contentIterator.next();
+                boolean hasAlias = false;
+                if (newContentItem != null)
+                    for (String alias : newContentItem.aliases()) {
+                        if (item.hasAlias(alias)) {
+                            hasAlias = true;
+                            break;
+                        }
+                    }
+                if (item.id() == id || hasAlias) {
                     if (newContentItem == null) {
                         contentIterator.remove();
                     } else {

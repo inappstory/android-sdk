@@ -6,6 +6,8 @@ import java.util.Set;
 
 public interface IReaderContent extends IStatData, IContentWithStatus {
     String layout();
+    List<String> aliases();
+    boolean hasAlias(String alias);
     Map<String, String> layoutTemplateVariables();
     String slideByIndex(int index);
     List<IResource> vodResources(int index);

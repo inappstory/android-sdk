@@ -10,6 +10,7 @@ import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,16 @@ public class Banner implements IBanner {
     @Override
     public String layout() {
         return layout;
+    }
+
+    @Override
+    public List<String> aliases() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public boolean hasAlias(String alias) {
+        return false;
     }
 
     private IReaderContentSlide slide(int index) {

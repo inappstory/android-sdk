@@ -37,6 +37,11 @@ public class ListContentHolder implements IListsContentHolder {
         return null;
     }
 
+    @Override
+    public IListItemContent getByAliasAndType(String alias, ContentType type) {
+        return null;
+    }
+
     private final Object contentLock = new Object();
 
     private final List<IListItemContent> stories = new ArrayList<>();
@@ -93,6 +98,11 @@ public class ListContentHolder implements IListsContentHolder {
                 content.add(newContentItem);
             }
         }
+    }
+
+    @Override
+    public void setByIdAndAliasesAndType(IListItemContent newContentItem, int id, List<String> aliases, ContentType type) {
+
     }
 
     @Override

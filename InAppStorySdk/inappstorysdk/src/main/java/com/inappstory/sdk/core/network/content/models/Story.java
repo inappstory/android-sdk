@@ -19,6 +19,7 @@ import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.stories.api.models.GameInstance;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +116,16 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     @SerializedName("layout")
     public String layout;
+
+    @Override
+    public List<String> aliases() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public boolean hasAlias(String alias) {
+        return false;
+    }
 
     @Override
     public String title() {

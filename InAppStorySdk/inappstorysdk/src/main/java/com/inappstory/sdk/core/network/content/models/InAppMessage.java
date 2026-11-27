@@ -16,6 +16,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedS
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,10 @@ public class InAppMessage implements IInAppMessage {
     public String campaignName;
 
 
+    @SerializedName("aliases")
+    public List<String> aliases;
+
+
     @SerializedName("custom_attributes")
     public Map<String, String> customAttributes;
 
@@ -72,6 +77,16 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public String layout() {
         return null;
+    }
+
+    @Override
+    public List<String> aliases() {
+        return aliases != null ? aliases : new ArrayList<>();
+    }
+
+    @Override
+    public boolean hasAlias(String alias) {
+        return aliases != null && aliases.contains(alias);
     }
 
     @SerializedName("layout_template_variables")
