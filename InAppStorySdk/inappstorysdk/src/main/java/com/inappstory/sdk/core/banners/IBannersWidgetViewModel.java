@@ -53,4 +53,6 @@ public interface IBannersWidgetViewModel<T extends IBannerWidgetState> {
 
     boolean hasSubscribers(Observer<T> observer);
 
+    void removeBanner(int bannerId);
+
 }

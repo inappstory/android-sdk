@@ -53,6 +53,15 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
         this.bannerRadius = bannerRadius;
     }
 
+    public boolean removeItemAt(int index) {
+        if (index >= 0 && index < getItemCount()) {
+            banners.remove(index);
+            notifyItemRemoved(index);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public int getItemViewType(int position) {
         return position;
@@ -65,7 +74,7 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     public BannerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.cs_banner_list_item, parent, false);
-        return new BannerViewHolder(view, banners.get(viewType).bannerAppearance().singleBannerAspectRatio());
+        return new BannerViewHolder(view, banners.get(viewType));
     }
 
 
@@ -78,7 +87,8 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     public void onViewDetachedFromWindow(@NonNull BannerViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
         int position = holder.getAbsoluteAdapterPosition();
-        IBanner banner = banners.get(position % banners.size());
+        IBanner banner = holder.banner();
+        if (banner == null) return;
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
                 .widgetViewModels()
@@ -97,7 +107,8 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     public void onViewAttachedToWindow(@NonNull BannerViewHolder holder) {
         super.onViewAttachedToWindow(holder);
         int position = holder.getAbsoluteAdapterPosition();
-        IBanner banner = banners.get(position % banners.size());
+        IBanner banner = holder.banner();
+        if (banner == null) return;
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
                 .widgetViewModels()
@@ -120,7 +131,8 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
         bannerView.setBannerRadius(bannerRadius);
         String tag = "banner_" + position;
         bannerView.setTag(tag);
-        IBanner banner = banners.get(position % banners.size());
+        IBanner banner = holder.banner();
+        if (banner == null) return;
         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
        // bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio(), true);
         final int bannerId = banner.id();

@@ -39,4 +39,15 @@
     <declare-styleable name="BannerGrid">
         <attr name="cs_banner_grid_place_id" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="IasDynamicGridLayout">
+        <attr name="columnCount" format="integer" />
+        <attr name="horizontalSpacing" format="dimension" />
+        <attr name="verticalSpacing" format="dimension" />
+        <attr name="rowAlignment" format="enum">
+            <enum name="top" value="0" />
+            <enum name="center" value="1" />
+            <enum name="bottom" value="2" />
+        </attr>
+    </declare-styleable>
 </resources>

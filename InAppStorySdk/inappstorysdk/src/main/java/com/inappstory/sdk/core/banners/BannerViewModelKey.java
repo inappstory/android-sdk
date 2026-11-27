@@ -8,8 +8,13 @@ public class BannerViewModelKey {
     private final String bannerPlace;
 
     public boolean correct(int bannerId, String bannerPlace) {
-        return this.bannerPlace.equals(bannerPlace) && this.bannerId == bannerId;
+        return bannerPlaceEquals(bannerPlace) && this.bannerId == bannerId;
     }
+
+    public boolean bannerPlaceEquals(String bannerPlace) {
+        return Objects.equals(bannerPlace, this.bannerPlace);
+    }
+
 
     public BannerViewModelKey(int bannerId, int bannerIndex, String bannerPlace) {
         this.bannerId = bannerId;

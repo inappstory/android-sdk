@@ -22,6 +22,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
+import com.inappstory.sdk.banners.IBannerHideCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
@@ -325,19 +326,22 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
 
         @Override
         public void loadError() {
-            if (bannerPlaceLoadCallback != null) bannerPlaceLoadCallback.loadError();
+            if (bannerPlaceLoadCallback != null)
+                bannerPlaceLoadCallback.loadError();
 
         }
 
         @Override
         public void bannerLoaded(int bannerId, boolean isCurrent) {
-            if (bannerPlaceLoadCallback != null) bannerLoaded(bannerId, isCurrent);
+            if (bannerPlaceLoadCallback != null)
+                bannerPlaceLoadCallback.bannerLoaded(bannerId, isCurrent);
 
         }
 
         @Override
         public void bannerLoadError(int bannerId, boolean isCurrent) {
-            if (bannerPlaceLoadCallback != null) bannerLoadError(bannerId, isCurrent);
+            if (bannerPlaceLoadCallback != null)
+                bannerPlaceLoadCallback.bannerLoadError(bannerId, isCurrent);
         }
 
         @Override
@@ -357,6 +361,11 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
             }
         }
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
+    }
+
+    @Override
+    public void bannerHideCallback(IBannerHideCallback removeCallback) {
+
     }
 
     public void reloadBanners() {

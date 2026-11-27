@@ -26,4 +26,12 @@ public interface IASStatisticBannerV1 extends StatDisabled {
             long duration,
             String iterationId
     );
+
+    void sendHideEvent(
+            int bannerId,
+            int slideIndex,
+            int slidesTotal,
+            long duration,
+            String iterationId
+    );
 }

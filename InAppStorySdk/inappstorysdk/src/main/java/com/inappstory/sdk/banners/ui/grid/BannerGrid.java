@@ -3,43 +3,40 @@ package com.inappstory.sdk.banners.ui.grid;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.banners.BannerData;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
-import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
+import com.inappstory.sdk.banners.IBannerHideCallback;
+import com.inappstory.sdk.banners.UpdateBannerItemsData;
+import com.inappstory.sdk.banners.UpdateBannerItemsType;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
-import com.inappstory.sdk.banners.ui.list.BannerList;
-import com.inappstory.sdk.banners.ui.list.BannerListAdapter;
-import com.inappstory.sdk.banners.ui.list.DefaultBannerListAppearance;
+import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.banners.BannerDownloadManager;
 import com.inappstory.sdk.core.banners.BannerListState;
 import com.inappstory.sdk.core.banners.BannerListViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
+import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerGridAppearance;
-import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.data.IBanner;
+import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -49,7 +46,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class BannerGrid extends LinearLayout implements Observer<BannerListState>, IBannersWidget {
+public class BannerGrid extends IasDynamicGridLayout implements Observer<BannerListState>, IBannersWidget {
 
 
     private String placeId;
@@ -72,6 +69,69 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
         }
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
     }
+
+    @Override
+    public void bannerHideCallback(IBannerHideCallback bannerHideCallback) {
+        this.bannerHideCallback = bannerHideCallback;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (bannerGridViewModel != null)
+            bannerGridViewModel.singleTimeEvents().subscribeAndGetValue(steObserver);
+        resumeBanners();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (bannerGridViewModel != null)
+            bannerGridViewModel.singleTimeEvents().unsubscribe(steObserver);
+        pauseBanners();
+    }
+
+    private IBannerHideCallback bannerHideCallback = null;
+
+    Observer<STETypeAndData> steObserver = new Observer<STETypeAndData>() {
+        @Override
+        public void onUpdate(STETypeAndData newValue) {
+            if (newValue == null) return;
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    switch (newValue.type()) {
+                        case REMOVE_BANNER:
+                            UpdateBannerItemsData data = (UpdateBannerItemsData) newValue.data();
+
+                            if (data.type() == UpdateBannerItemsType.REMOVE) {
+                                int bannerId = data.id();
+                                IBanner removedData = null;
+                                for (IBanner bannerData : data.items()) {
+                                    if (bannerData.id() == bannerId) {
+                                        removedData = bannerData;
+                                        break;
+                                    }
+                                }
+                                if (removedData != null) {
+                                    removeItemAt(data.items().indexOf(removedData));
+                                    if (bannerHideCallback != null)
+                                        bannerHideCallback.bannerIsHidden(
+                                                new BannerData(
+                                                        removedData,
+                                                        placeId
+                                                ),
+                                                -1
+                                        );
+                                }
+                            }
+                            break;
+                    }
+                }
+            });
+
+        }
+    };
 
     private final IBannerPlaceLoadCallback internalBannerPlaceLoadCallback = new InnerBannerPlaceLoadCallback() {
         @Override
@@ -105,13 +165,15 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
 
         @Override
         public void bannerLoaded(int bannerId, boolean isCurrent) {
-            if (bannerPlaceLoadCallback != null) bannerLoaded(bannerId, isCurrent);
+            if (bannerPlaceLoadCallback != null)
+                bannerPlaceLoadCallback.bannerLoaded(bannerId, isCurrent);
 
         }
 
         @Override
         public void bannerLoadError(int bannerId, boolean isCurrent) {
-            if (bannerPlaceLoadCallback != null) bannerLoadError(bannerId, isCurrent);
+            if (bannerPlaceLoadCallback != null)
+                bannerPlaceLoadCallback.bannerLoadError(bannerId, isCurrent);
         }
 
         @Override
@@ -193,7 +255,9 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
     }
 
     private void init(Context context) {
-        setOrientation(VERTICAL);
+
+
+
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -202,9 +266,11 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
                         .widgetViewModels()
                         .bannerPlaceViewModels();
                 bannerGridViewModel = (BannerListViewModel)
-                        holder.getOrCreate(uniqueId(), BannerWidgetViewModelType.LAZY_LIST);
+                        holder.getOrCreate(uniqueId(), BannerWidgetViewModelType.GRID);
             }
         });
+
+
     }
 
     public void setPlaceId(final String placeId) {
@@ -236,52 +302,85 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
         this.customBannerGridAppearance = appearanceManager.csBannerGridInterface();
-        updateAppearance();
+        settings(
+                customBannerGridAppearance.align().value(),
+                Sizes.dpToPxExt(customBannerGridAppearance.verticalGap(), getContext()),
+                Sizes.dpToPxExt(customBannerGridAppearance.horizontalGap(), getContext()),
+                customBannerGridAppearance.columnCount()
+        );
     }
 
-    private void updateAppearance() {
-        if (currentState == null) return;
-        int cc = customBannerGridAppearance.columnCount();
-        if (cc <= 0) cc = 1;
-        removeAllViews();
+    private boolean checkVisibility() {
+        Rect rowRect = new Rect();
+        getGlobalVisibleRect(rowRect);
+        Rect displayRect = new Rect();
+        getWindowVisibleDisplayFrame(displayRect);
+        return rowRect.top <= displayRect.bottom && rowRect.bottom >= displayRect.top;
+    }
+
+    private boolean externalPause = false;
+
+
+    private void updateData() {
         BannerListState state = currentState.copy();
         List<IBanner> banners = state.getItems();
-        for (int i = 0; i < banners.size(); i += cc) {
-            BannerGridRow row = new BannerGridRow(getContext());
-            row.setViews(
-                    core,
-                    i,
-                    getMeasuredWidth(),
-                    state.iterationId(),
-                    uniqueId(),
-                    customBannerGridAppearance,
-                    banners
-            );
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            );
-            if (i > 0)
-                lp.setMargins(
-                        0,
-                        Sizes.dpToPxExt(customBannerGridAppearance.verticalGap(), getContext()),
-                        0,
-                        0
-                );
-            addView(row, lp);
-        }
-        resumeBanners();
+        int maxBannerWidth = getColumnWidth();
+        setItems(
+                banners,
+                new ItemBinder<IBanner>() {
+                    @Override
+                    public View createView(ViewGroup parent, int position) {
+                        IBanner banner = banners.get(position);
+
+                        BannerView bannerView = new BannerView(parent.getContext());
+                        IBannerViewModel bannerViewModel = bannerGridViewModel.getBannerViewModel(
+                                banner.id(),
+                                position
+                        );
+                        bannerViewModel.iterationId(state.iterationId());
+                        String tag = "banner_" + position;
+                        bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
+                        bannerView.setSize(-1, -1, true);
+                        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(
+                                maxBannerWidth,
+                                (int) (maxBannerWidth / banner.bannerAppearance().singleBannerAspectRatio())
+                        );
+                        bannerView.setLayoutParams(lp);
+                        bannerView.setTag(tag);
+                        bannerView.viewModel(
+                                bannerViewModel
+                        );
+                        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+                            @Override
+                            public void use(@NonNull IASCore core) {
+                                BannerDownloadManager bannerDownloadManager =
+                                        core.contentLoader().bannerDownloadManager();
+                                bannerDownloadManager.setMaxPriority(banner.id(), false);
+                                bannerViewModel.loadContent(false, null);
+                                bannerViewModel.bannerIsActive(true);
+                            }
+                        });
+                        return bannerView;
+                    }
+
+                    @Override
+                    public void bindView(View view, IBanner item, int position) {
+                        IBanner banner = banners.get(position);
+                    }
+                }
+        );
     }
-
-
 
     private LoopedExecutor executorService = null;
 
+    private boolean paused = true;
 
     public void pauseBanners() {
+        if (paused) return;
+        paused = true;
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
-            ((BannerGridRow)getChildAt(i)).pauseBanners();
+            ((BannerView) getChildAt(i)).pauseBanner();
         }
         if (executorService != null) {
             executorService.cancelTask();
@@ -311,9 +410,7 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    for (int i = 0; i < childCount; i++) {
-                        ((BannerGridRow)getChildAt(i)).updateVisibility();
-                    }
+
                 }
             });
             executorService.freeExecutor();
@@ -321,15 +418,14 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
     };
 
     public void resumeBanners() {
-
+        if (!paused) return;
+        paused = false;
         if (executorService == null) {
             executorService = new LoopedExecutor(1L, 300L, this.toString());
             executorService.task(checkVisibilityRunnable);
         }
         int childCount = getChildCount();
-        for (int i = 0; i < childCount; i++) {
-            ((BannerGridRow)getChildAt(i)).resumeBanners();
-        }
+
     }
 
     BannerListState currentState;
@@ -347,7 +443,7 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        updateAppearance();
+                        updateData();
                     }
                 });
                 break;

@@ -89,6 +89,11 @@ public class BannerJavascriptInterface {
     }
 
     @JavascriptInterface
+    public void closeStory(String reason) {
+        slideViewModel.closeReader();
+    }
+
+    @JavascriptInterface
     public void storyStatisticEvent(
             String name,
             String data,

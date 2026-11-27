@@ -56,7 +56,10 @@ public class BannerCarouselState implements IBannerCarouselState {
     }
 
     public BannerCarouselState items(List<IBanner> items) {
-        this.items = items;
+        if (items != null)
+            this.items = new ArrayList<>(items);
+        else
+            this.items = null;
         return this;
     }
 

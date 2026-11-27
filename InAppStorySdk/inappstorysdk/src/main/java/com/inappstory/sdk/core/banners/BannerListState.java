@@ -50,7 +50,10 @@ public class BannerListState implements IBannerWidgetState {
     }
 
     public BannerListState items(List<IBanner> items) {
-        this.items = items;
+        if (items != null)
+            this.items = new ArrayList<>(items);
+        else
+            this.items = null;
         return this;
     }
 

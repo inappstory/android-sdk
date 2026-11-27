@@ -22,6 +22,25 @@ public class BannerPlaceViewModelsHolder {
     }
 
 
+    private final Set<Integer> closedBannerIds = new HashSet<>();
+
+    public void closeBanner(int id) {
+        synchronized (lock) {
+            closedBannerIds.add(id);
+        }
+    }
+
+    public boolean bannerIsClosed(int id) {
+        synchronized (lock) {
+            return closedBannerIds.contains(id);
+        }
+    }
+
+    public Set<IBannersWidgetViewModel> allViewModels() {
+        return new HashSet<>(viewModels.values());
+    }
+
+
     public IBannersWidgetViewModel getContentPlaceViewModel(String bannerPlace) {
         return get("ias_banner_place_" + bannerPlace);
     }
