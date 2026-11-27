@@ -1,9 +1,7 @@
-import com.vanniktech.maven.publish.SonatypeHost
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
-apply plugin: 'com.vanniktech.maven.publish'
 
 def getVersionName = { ->
     return inappstory_output_version
