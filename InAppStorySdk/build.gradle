@@ -3,8 +3,8 @@
 buildscript {
     ext {
         kotlin_version = '1.7.20'
-        inappstory_output_version = "1.26.0"
-        inappstory_output_build = 1250
+        inappstory_output_version = "1.27.0"
+        inappstory_output_build = 1300
         inappstory_target_sdk = 33
         inappstory_min_sdk = 21
 
